@@ -6,11 +6,13 @@
 [![Endpoint Status](https://img.shields.io/badge/Gateway-ONLINE-brightgreen.svg)](https://a2a.musefish.trade)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
-A production-grade Model Context Protocol (MCP) server providing real-time Web3 security and pre-execution simulation on Base Mainnet (ChainID `8453`). Built for autonomous AI agents, automated trading swarms, and decentralized quant workflows.
+A production-grade Model Context Protocol (MCP) server providing real-time Web3 security, pre-execution simulation, and zero-retention uncensored AI inference on Base Mainnet (ChainID `8453`). Built for autonomous AI agents, automated trading swarms, security auditors, and decentralized quant workflows.
 
-The gateway exposes two primary agent tools backed by micro-settlement via the **HTTP 402 (x402)** protocol:
+The gateway exposes four primary agent tools backed by micro-settlement via the **HTTP 402 (x402)** protocol:
 1. **`check_base_token_safety`**: Pre-trade token bytecode audit, liquidity depth verification, and honeypot risk assessment (0.01 USDC).
-2. **`simulate_mev_route`**: Ephemeral in-memory EVM trace simulation (EPH-02 sandbox) for flashloans and multi-hop swaps without on-chain broadcast (1.50 USDC).
+2. **`simulate_mev_route_safety`**: Ephemeral in-memory EVM trace simulation (EPH-02 sandbox) for flashloans and multi-hop swaps without on-chain broadcast (1.50 USDC).
+3. **`fast_code_audit`**: Lightning-fast (93 t/s) uncensored smart contract and security audit powered by local Qwen3.5-9B (0.02 USDC).
+4. **`deep_protocol_reasoning`**: Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC).
 
 ---
 
@@ -74,6 +76,8 @@ This server strictly conforms to the **Model Context Protocol (2024-11-05)** spe
 
 Performs an on-chain bytecode safety assessment and liquidity dehydrator report for any token contract on Base.
 
+- **Pricing**: 0.01 USDC ($0.01)
+
 #### Input Schema
 ```json
 {
@@ -81,7 +85,7 @@ Performs an on-chain bytecode safety assessment and liquidity dehydrator report 
   "properties": {
     "token_address": {
       "type": "string",
-      "description": "Base ERC-20 contract address (0x...)"
+      "description": "Base ERC-20 contract hex address (e.g. 0x4200000000000000000000000000000000000006 for WETH)"
     }
   },
   "required": ["token_address"]
@@ -111,29 +115,31 @@ Performs an on-chain bytecode safety assessment and liquidity dehydrator report 
 
 ---
 
-### Tool 2: `simulate_mev_route`
+### Tool 2: `simulate_mev_route_safety`
 
-Executes multi-call routes in a clean, read-only EVM sandbox to detect sandwich attacks, state discrepancies, reentrancy traps, and slippage anomalies before transaction broadcasting.
+Executes multi-call routes in a clean, read-only EVM sandbox (EPH-02) to detect sandwich attacks, state discrepancies, reentrancy traps, and slippage anomalies before transaction broadcasting.
+
+- **Pricing**: 1.50 USDC ($1.50)
 
 #### Input Schema
 ```json
 {
   "type": "object",
   "properties": {
-    "calls": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "target": { "type": "string", "description": "Target contract address" },
-          "call_data": { "type": "string", "description": "Hex-encoded transaction calldata" },
-          "value": { "type": "string", "description": "ETH value in wei (default 0)" }
-        },
-        "required": ["target", "call_data"]
-      }
+    "target_address": {
+      "type": "string",
+      "description": "Smart contract address on Base"
+    },
+    "calldata": {
+      "type": "string",
+      "description": "Hex encoded calldata (e.g. 0x06fdde03)"
+    },
+    "value": {
+      "type": "integer",
+      "description": "Native ETH value in wei (default 0)"
     }
   },
-  "required": ["calls"]
+  "required": ["target_address"]
 }
 ```
 
@@ -153,13 +159,91 @@ Executes multi-call routes in a clean, read-only EVM sandbox to detect sandwich 
 
 ---
 
+### Tool 3: `fast_code_audit` (New 🚀)
+
+Zero-refusal, lightning-fast smart contract and code security audit powered by local Qwen3.5-9B (throughput ~93 t/s on RTX 5070 Ti). Identifies honeypots, malicious backdoors, reentrancy vulnerabilities, transfer tax traps, and hidden mints with zero moralizing refusal.
+
+- **Pricing**: 0.02 USDC ($0.02)
+- **Privacy Model**: Pure ephemeral memory execution (Zero log retention, no prompt or output persistence).
+
+#### Input Schema
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "Solidity code snippet, contract logic, or security question to audit (Max 16,384 chars)"
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "Optional customized system role prompt"
+    }
+  },
+  "required": ["prompt"]
+}
+```
+
+#### Example Response
+```json
+{
+  "status": "SUCCESS",
+  "model": "Qwen3.5-9B-Uncensored-Aggressive",
+  "audit_report": "### Critical Findings:\n- [CRITICAL] Hidden Owner Backdoor: Owner can freeze any account.\n- [HIGH] Reentrancy in withdraw(): State updated after transfer.",
+  "latency_ms": 22384.27,
+  "tokens_consumed": 2168,
+  "security_notice": "Pure ephemeral memory inference. Zero retention, no logging."
+}
+```
+
+---
+
+### Tool 4: `deep_protocol_reasoning` (New 🚀)
+
+Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE. Analyzes multi-contract cross-chain interactions, mathematical flashloan constraints, game-theoretic attack vectors, and protocol edge cases.
+
+- **Pricing**: 0.10 USDC ($0.10)
+- **Architecture**: 35B MoE with 256k context depth.
+
+#### Input Schema
+```json
+{
+  "type": "object",
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "description": "Complex protocol architecture, mathematical arbitrage model, or system design to evaluate (Max 16,384 chars)"
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "Optional customized system role prompt"
+    }
+  },
+  "required": ["prompt"]
+}
+```
+
+#### Example Response
+```json
+{
+  "status": "SUCCESS",
+  "model": "Qwen3.6-35B-A3B-Uncensored",
+  "reasoning_report": "### Mathematical Protocol Proof:\n1. Flashloan invariant Δx · Δy >= k is strictly violated when slippage exceeds 32 bps under multi-pool pool balancing...\n2. Arbitrage convergence theorem proof shows dead-lock condition at block boundary.",
+  "latency_ms": 31250.40,
+  "tokens_consumed": 3890,
+  "security_notice": "Pure ephemeral memory inference. Zero retention, no logging."
+}
+```
+
+---
+
 ## 💳 Autonomous Settlement: x402 Protocol
 
-This server integrates the **HTTP 402 (Payment Required)** standard for machine-to-machine micropayments:
+This server integrates the **Coinbase x402 v2 (Payment Required)** standard for machine-to-machine micropayments:
 
-1. When calling via standard HTTP REST, an unauthenticated request receives a structured `HTTP 402` with an invoice ID and exact deposit requirements.
+1. When calling via standard HTTP REST or MCP `tools/call`, an unauthenticated request receives a structured `HTTP 402` with an invoice ID, challenge text to sign, and exact deposit requirements.
 2. The agent transfers the specified amount of native Base USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`) to the designated gateway wallet (`0xA75E1a201552Cad0282d01C09DC95d9559642FBb`).
-3. Resending the request with `X-TX-Hash` and an EIP-191 cryptographic payment claim immediately clears the invoice and delivers the verified payload.
+3. Resending the request with `tx_hash`, `invoice_id`, `payer_address`, and an EIP-191 cryptographic payment signature immediately clears the invoice and delivers the verified payload.
 
 ---
 
@@ -172,6 +256,7 @@ This server integrates the **HTTP 402 (Payment Required)** standard for machine-
 - **Verified Listing**: Indexed on [the402.dev](https://the402.dev) with verified `answers 402` status.
 
 ---
+
 ## 📄 License
 
 Distributed under the [Apache-2.0 License](LICENSE).
