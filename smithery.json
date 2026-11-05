@@ -101,6 +101,32 @@
         },
         "required": ["prompt"]
       }
+    },
+    {
+      "name": "remove_image_background",
+      "description": "One-click high-precision image background removal powered by local native PyTorch RMBG-1.4 model (0.01 USDC). Returns clean transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "description": "Image payload as Base64 string (data:image/png;base64,...) or public HTTP/HTTPS URL"
+          },
+          "rem_mode": {
+            "type": "string",
+            "enum": ["RMBG-1.4"],
+            "default": "RMBG-1.4",
+            "description": "Background removal model engine"
+          },
+          "add_background": {
+            "type": "string",
+            "enum": ["none", "white", "black"],
+            "default": "none",
+            "description": "Optional replacement background color"
+          }
+        },
+        "required": ["image"]
+      }
     }
   ]
 }
