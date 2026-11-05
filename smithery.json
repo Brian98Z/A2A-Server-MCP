@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json.schemastore.org/mcp-server-manifest.json",
+  "name": "a2a-base-guard",
+  "description": "Base Token Pre-trade Security Audit & EPH-02 MEV Sandbox Gateway via x402 Micropayments",
+  "version": "1.0.0",
+  "homepage": "https://a2a.musefish.trade",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/a2a-network/a2a-base-token-guard"
+  },
+  "author": {
+    "name": "A2A Protocol",
+    "url": "https://a2a.musefish.trade"
+  },
+  "keywords": [
+    "mcp",
+    "web3",
+    "base",
+    "usdc",
+    "x402",
+    "mev",
+    "token-security",
+    "honeypot",
+    "ai-agent"
+  ],
+  "server": {
+    "type": "http",
+    "url": "https://a2a.musefish.trade/mcp"
+  },
+  "tools": [
+    {
+      "name": "check_base_token_safety",
+      "description": "Performs pre-trade honeypot and bytecode security dehydrator report for tokens on Base Mainnet (0.01 USDC)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "token_address": {
+            "type": "string",
+            "description": "Base ERC-20 contract address (0x...)"
+          }
+        },
+        "required": ["token_address"]
+      }
+    },
+    {
+      "name": "simulate_mev_route",
+      "description": "Simulates MEV / Flashloan swap execution in EPH-02 ephemeral sandbox on Base without broadcasting (1.50 USDC)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "calls": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "target": { "type": "string" },
+                "call_data": { "type": "string" },
+                "value": { "type": "string" }
+              },
+              "required": ["target", "call_data"]
+            }
+          }
+        },
+        "required": ["calls"]
+      }
+    }
+  ]
+}
