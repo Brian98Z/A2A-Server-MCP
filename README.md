@@ -8,11 +8,12 @@
 
 A production-grade Model Context Protocol (MCP) server providing real-time Web3 security, pre-execution simulation, and zero-retention uncensored AI inference on Base Mainnet (ChainID `8453`). Built for autonomous AI agents, automated trading swarms, security auditors, and decentralized quant workflows.
 
-The gateway exposes four primary agent tools backed by micro-settlement via the **HTTP 402 (x402)** protocol:
+The gateway exposes five primary agent tools backed by micro-settlement via the **HTTP 402 (x402)** protocol:
 1. **`check_base_token_safety`**: Pre-trade token bytecode audit, liquidity depth verification, and honeypot risk assessment (0.01 USDC).
 2. **`simulate_mev_route_safety`**: Ephemeral in-memory EVM trace simulation (EPH-02 sandbox) for flashloans and multi-hop swaps without on-chain broadcast (1.50 USDC).
 3. **`fast_code_audit`**: Lightning-fast (93 t/s) uncensored smart contract and security audit powered by local Qwen3.5-9B (0.02 USDC).
 4. **`deep_protocol_reasoning`**: Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC).
+5. **`remove_image_background`**: One-click high-precision image matting and background removal powered by local native PyTorch RMBG-1.4 CUDA model (0.01 USDC). Returns transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.
 
 ---
 
