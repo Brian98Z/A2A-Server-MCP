@@ -32,7 +32,7 @@
   "tools": [
     {
       "name": "check_base_token_safety",
-      "description": "Performs pre-trade honeypot and bytecode security dehydrator report for tokens on Base Mainnet (0.01 USDC)",
+      "description": "Performs pre-trade honeypot and bytecode security dehydrator report for tokens on Base Mainnet (0.01 USDC / 0.10 CNY via Alipay A2M)",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -46,7 +46,7 @@
     },
     {
       "name": "simulate_mev_route_safety",
-      "description": "Simulates MEV / Flashloan swap execution in EPH-02 ephemeral sandbox on Base without broadcasting (1.50 USDC)",
+      "description": "Simulates MEV / Flashloan swap execution in EPH-02 ephemeral sandbox on Base without broadcasting (1.50 USDC / 15.00 CNY via Alipay A2M)",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -68,7 +68,7 @@
     },
     {
       "name": "fast_code_audit",
-      "description": "Zero-refusal, lightning-fast (93 t/s) smart contract and code security audit powered by local Qwen3.5-9B (0.02 USDC)",
+      "description": "Zero-refusal, lightning-fast (93 t/s) smart contract and code security audit powered by local Qwen3.5-9B (0.02 USDC / 0.20 CNY via Alipay A2M)",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -86,7 +86,7 @@
     },
     {
       "name": "deep_protocol_reasoning",
-      "description": "Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC)",
+      "description": "Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC / 1.00 CNY via Alipay A2M)",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -104,7 +104,7 @@
     },
     {
       "name": "remove_image_background",
-      "description": "One-click high-precision image background removal powered by local native PyTorch RMBG-1.4 model (0.01 USDC). Returns clean transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.",
+      "description": "One-click high-precision image background removal powered by local native PyTorch RMBG-1.4 model (0.01 USDC / 0.10 CNY via Alipay A2M). Returns clean transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.",
       "inputSchema": {
         "type": "object",
         "properties": {
