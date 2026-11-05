@@ -1,12 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/mcp-server-manifest.json",
   "name": "a2a-base-guard",
-  "description": "Base Token Pre-trade Security Audit & EPH-02 MEV Sandbox Gateway via x402 Micropayments",
-  "version": "1.0.0",
+  "description": "Base Web3 Security, MEV Sandbox & Zero-Retention Uncensored AI Inference via x402 Micropayments",
+  "version": "2.0.0",
   "homepage": "https://a2a.musefish.trade",
   "repository": {
     "type": "git",
-    "url": "https://github.com/a2a-network/a2a-base-token-guard"
+    "url": "https://github.com/Brian98Z/A2A-Server-MCP"
   },
   "author": {
     "name": "A2A Protocol",
@@ -21,7 +21,9 @@
     "mev",
     "token-security",
     "honeypot",
-    "ai-agent"
+    "ai-agent",
+    "smart-contract-audit",
+    "uncensored-llm"
   ],
   "server": {
     "type": "http",
@@ -36,32 +38,68 @@
         "properties": {
           "token_address": {
             "type": "string",
-            "description": "Base ERC-20 contract address (0x...)"
+            "description": "Base ERC-20 contract hex address (0x...)"
           }
         },
         "required": ["token_address"]
       }
     },
     {
-      "name": "simulate_mev_route",
+      "name": "simulate_mev_route_safety",
       "description": "Simulates MEV / Flashloan swap execution in EPH-02 ephemeral sandbox on Base without broadcasting (1.50 USDC)",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "calls": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "target": { "type": "string" },
-                "call_data": { "type": "string" },
-                "value": { "type": "string" }
-              },
-              "required": ["target", "call_data"]
-            }
+          "target_address": {
+            "type": "string",
+            "description": "Smart contract address on Base"
+          },
+          "calldata": {
+            "type": "string",
+            "description": "Hex encoded calldata"
+          },
+          "value": {
+            "type": "integer",
+            "description": "Native ETH value in wei"
           }
         },
-        "required": ["calls"]
+        "required": ["target_address"]
+      }
+    },
+    {
+      "name": "fast_code_audit",
+      "description": "Zero-refusal, lightning-fast (93 t/s) smart contract and code security audit powered by local Qwen3.5-9B (0.02 USDC)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Solidity code snippet or contract logic to audit (Max 16k chars)"
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "Optional customized system role prompt"
+          }
+        },
+        "required": ["prompt"]
+      }
+    },
+    {
+      "name": "deep_protocol_reasoning",
+      "description": "Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Complex protocol architecture, mathematical arbitrage model, or system design to evaluate (Max 16k chars)"
+          },
+          "system_prompt": {
+            "type": "string",
+            "description": "Optional customized system role prompt"
+          }
+        },
+        "required": ["prompt"]
       }
     }
   ]
