@@ -12,9 +12,9 @@
     "name": "A2A Protocol",
     "url": "https://a2a.musefish.trade"
   },
+  "license": "Apache-2.0",
   "keywords": [
     "mcp",
-    "web3",
     "base",
     "usdc",
     "x402",
