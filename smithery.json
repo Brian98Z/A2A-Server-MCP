@@ -32,24 +32,26 @@
   "tools": [
     {
       "name": "check_base_token_safety",
-      "description": "Performs pre-trade honeypot and bytecode security dehydrator report for tokens on Base Mainnet (0.01 USDC / 0.10 CNY via Alipay A2M)",
+      "description": "Base token security report; 0.01 USDC on-chain or eligible points. Pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "payer_address": {"type": "string", "description": "Payer wallet address"},
           "token_address": {
             "type": "string",
             "description": "Base ERC-20 contract hex address (0x...)"
           }
         },
-        "required": ["token_address"]
+        "required": ["token_address", "payer_address"]
       }
     },
     {
       "name": "simulate_mev_route_safety",
-      "description": "Simulates MEV / Flashloan swap execution in EPH-02 ephemeral sandbox on Base without broadcasting (1.50 USDC / 15.00 CNY via Alipay A2M)",
+      "description": "MEV route simulation, 1.50 USDC on-chain; pass invoice_id, signature and tx_hash via _meta.x402/payment.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "payer_address": {"type": "string", "description": "Payer wallet address"},
           "target_address": {
             "type": "string",
             "description": "Smart contract address on Base"
@@ -63,15 +65,16 @@
             "description": "Native ETH value in wei"
           }
         },
-        "required": ["target_address"]
+        "required": ["target_address", "payer_address"]
       }
     },
     {
       "name": "fast_code_audit",
-      "description": "Zero-refusal, lightning-fast (93 t/s) smart contract and code security audit powered by local Qwen3.5-9B (0.02 USDC / 0.20 CNY via Alipay A2M)",
+      "description": "Fast code audit, 0.02 USDC on-chain; pass invoice_id, signature and tx_hash via _meta.x402/payment.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "payer_address": {"type": "string", "description": "Payer wallet address"},
           "prompt": {
             "type": "string",
             "description": "Solidity code snippet or contract logic to audit (Max 16k chars)"
@@ -81,15 +84,16 @@
             "description": "Optional customized system role prompt"
           }
         },
-        "required": ["prompt"]
+        "required": ["prompt", "payer_address"]
       }
     },
     {
       "name": "deep_protocol_reasoning",
-      "description": "Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC / 1.00 CNY via Alipay A2M)",
+      "description": "Deep reasoning, 0.10 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "payer_address": {"type": "string", "description": "Payer wallet address"},
           "prompt": {
             "type": "string",
             "description": "Complex protocol architecture, mathematical arbitrage model, or system design to evaluate (Max 16k chars)"
@@ -99,15 +103,16 @@
             "description": "Optional customized system role prompt"
           }
         },
-        "required": ["prompt"]
+        "required": ["prompt", "payer_address"]
       }
     },
     {
       "name": "remove_image_background",
-      "description": "One-click high-precision image background removal powered by local native PyTorch RMBG-1.4 model (0.01 USDC / 0.10 CNY via Alipay A2M). Returns clean transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.",
+      "description": "Transparent RMBG-1.4 background removal, 0.01 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
       "inputSchema": {
         "type": "object",
         "properties": {
+          "payer_address": {"type": "string", "description": "Payer wallet address"},
           "image": {
             "type": "string",
             "description": "Image payload as Base64 string (data:image/png;base64,...) or public HTTP/HTTPS URL"
@@ -120,13 +125,45 @@
           },
           "add_background": {
             "type": "string",
-            "enum": ["none", "white", "black"],
+            "enum": ["none"],
             "default": "none",
             "description": "Optional replacement background color"
           }
         },
-        "required": ["image"]
+        "required": ["image", "payer_address"]
       }
+    },
+    {
+      "name": "generate_a2a_invitation",
+      "description": "Single-call free EIP-191 wallet registration with SHA-256 proof of work; no challenge endpoint. Client supplies wallet, optional inviter code, chain ID, random nonce, expiry, signature, and decimal proof counter. The signed text binds the exact inviter code (or none); default PoW is 20 leading zero bits and A2A_POW_BITS configures 1-28. Successful exact request replay returns the original result without another reward. Returns A2A code and SVG.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wallet_address": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{40}$",
+            "description": "EVM wallet address; sign the canonical lowercase address"
+          },
+          "chain_id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4294967295,
+            "default": 8453,
+            "description": "Unsigned 32-bit EVM chain ID; defaults to Base (8453)"
+          },
+          "inviter_code": {"type": "string", "description": "Optional exact referral code; this exact value is signed"},
+          "nonce": {"type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Client-generated cryptographically random 32-byte nonce as lowercase hex"},
+          "expires_at": {"type": "integer", "description": "Unix seconds, strictly after now and at most 300 seconds ahead"},
+          "signature": {"type": "string", "minLength": 1, "description": "EIP-191 signature of the canonical UTF-8 message from get_a2a_registration_protocol"},
+          "pow_counter": {"type": "string", "pattern": "^(0|[1-9][0-9]{0,18})$", "description": "Canonical nonnegative decimal counter at most 9223372036854775807"}
+        },
+        "required": ["wallet_address", "nonce", "expires_at", "signature", "pow_counter"]
+      }
+    },
+    {
+      "name": "get_a2a_registration_protocol",
+      "description": "Get the canonical EIP-191 registration message and current proof-of-work difficulty.",
+      "inputSchema": {"type": "object", "properties": {}}
     }
   ]
 }

@@ -1,32 +1,10 @@
-# A2A Web3 Server MCP — Autonomous Agent Security Gateway
+# A2A Web3 Server MCP
 
-[![MCP Version](https://img.shields.io/badge/MCP-2024--11--05-blue.svg)](https://modelcontextprotocol.io/)
-[![Protocol](https://img.shields.io/badge/Web3-x402%20Autopay-green.svg)](https://the402.dev)
-[![Network](https://img.shields.io/badge/Chain-Base%20(8453)-orange.svg)](https://base.org)
-[![Endpoint Status](https://img.shields.io/badge/Gateway-ONLINE-brightgreen.svg)](https://a2a.musefish.trade)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+An MCP gateway for Base token security, transaction simulation, AI analysis, image background removal, and wallet-based referrals.
 
-A production-grade Model Context Protocol (MCP) server providing real-time Web3 security, pre-execution simulation, and zero-retention uncensored AI inference on Base Mainnet (ChainID `8453`). Built for autonomous AI agents, automated trading swarms, security auditors, and decentralized quant workflows.
+## Connect
 
-The gateway exposes five primary agent tools backed by micro-settlement via dual payment rails (Base USDC via x402 & CNY via Alipay A2M / Page Pay at 10x fiat rate):
-1. **`check_base_token_safety`**: Pre-trade token bytecode audit, liquidity depth verification, and honeypot risk assessment (0.01 USDC / 0.10 CNY).
-2. **`simulate_mev_route_safety`**: Ephemeral in-memory EVM trace simulation (EPH-02 sandbox) for flashloans and multi-hop swaps without on-chain broadcast (1.50 USDC / 15.00 CNY).
-3. **`fast_code_audit`**: Lightning-fast (93 t/s) uncensored smart contract and security audit powered by local Qwen3.5-9B (0.02 USDC / 0.20 CNY).
-4. **`deep_protocol_reasoning`**: Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE (0.10 USDC / 1.00 CNY).
-5. **`remove_image_background`**: One-click high-precision image matting and background removal powered by local native PyTorch RMBG-1.4 CUDA model (0.01 USDC / 0.10 CNY). Returns transparent RGBA PNG (Base64). Completely standalone, zero ComfyUI dependency.
-
----
-
-## ⚡ Quick Start & 1-Click Integration
-
-### 1. Cursor IDE
-
-Add the MCP server directly in Cursor via **Settings** -> **Features** -> **MCP** -> **Add new MCP server**:
-- **Name**: `a2a-base-guard`
-- **Type**: `HTTP / SSE`
-- **Server URL**: `https://a2a.musefish.trade/mcp`
-
-Or drop the following config into `.cursor/mcp.json` at your project root:
+Use Streamable HTTP with MCP protocol version `2025-03-26`:
 
 ```json
 {
@@ -38,226 +16,98 @@ Or drop the following config into `.cursor/mcp.json` at your project root:
 }
 ```
 
----
+Call `tools/list` for current input schemas. The legacy JSON-RPC endpoint is `/mcp-legacy`.
 
-### 2. Claude Desktop
+### Client setup
 
-Add the endpoint to your `claude_desktop_config.json`:
+In Cursor, add a new MCP server named `a2a-base-guard`, select Streamable HTTP, and use the URL above. In Claude Desktop, use its remote MCP connector where available; client versions differ in support for URL-based entries in `claude_desktop_config.json`. After connecting, refresh the server's tools and call `tools/list`. See the [integration guide](DISTRIBUTION_GUIDE.md) for additional discovery endpoints.
 
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+All paid tools require `payer_address` in their arguments. Common inputs:
+
+| Tool | Inputs besides `payer_address` |
+|---|---|
+| `check_base_token_safety` | `token_address`: Base token contract address |
+| `simulate_mev_route_safety` | `target_address`; optional hex `calldata` and integer `value` in wei |
+| `fast_code_audit`, `deep_protocol_reasoning` | `prompt`; optional `system_prompt` |
+| `remove_image_background` | `image` as base64 or a public URL; optional `rem_mode` and `add_background` |
+
+For example, start a token report with `{"token_address":"0x4200000000000000000000000000000000000006","payer_address":"<your wallet address>"}`. The first call returns invoice details rather than the paid report. Follow the payment steps below; replace the example wallet with your own.
+
+## Tools and pricing
+
+| Tool | Purpose | Price |
+|---|---|---|
+| `check_base_token_safety` | Base token security and liquidity report | 0.01 USDC or 1 point |
+| `simulate_mev_route_safety` | Read-only transaction route simulation | 1.50 USDC or 150 points |
+| `fast_code_audit` | AI code security analysis | 0.02 USDC or 2 points |
+| `deep_protocol_reasoning` | AI protocol analysis | 0.10 USDC or 10 points |
+| `remove_image_background` | Transparent image background removal | 0.01 USDC or 1 point |
+| `generate_a2a_invitation` | Register and generate a referral code and SVG | Free |
+| `get_a2a_registration_protocol` | Get signing and proof-of-work parameters | Free |
+
+## Membership and referrals
+
+Register in one request through `generate_a2a_invitation` or `POST /api/v1/invitations`. Generate a random 32-byte lowercase hexadecimal nonce and an expiry no more than 300 seconds ahead; sign the registration message with EIP-191, solve the proof of work, then submit `wallet_address`, `nonce`, `expires_at`, `signature`, and `pow_counter`. `chain_id` defaults to 8453; `inviter_code` is optional. Fetch the exact message and current difficulty with `get_a2a_registration_protocol` or `GET /api/v1/invitations/protocol`.
+
+Sign the following exact UTF-8 message with EIP-191 `personal_sign`, using LF line breaks and no trailing newline:
+
+```text
+A2A Membership Registration
+Domain: a2a.musefish.trade
+Wallet: <lowercase canonical address>
+Inviter code: <exact referral code | none>
+Chain ID: <unsigned canonical decimal>
+Nonce: <64 lowercase hex chars>
+Expires: <canonical Unix-seconds decimal>
+Sign this message to register this wallet.
+```
+
+For proof of work, find a canonical nonnegative decimal counter such that SHA-256 of UTF-8 `a2a-registration-pow-v1:<message_sha256_hex>:<signature_sha256_hex>:<decimal_counter>` has the number of leading zero bits returned by the protocol endpoint. Both hashes are lowercase SHA-256 hex of the exact UTF-8 message and signature strings. Submit the resulting counter as `pow_counter`; use the exact inviter code in both message and request, or `none` in the message when omitted. Registration returns a referral code, invitation link, and SVG.
+
+Each eligible referred registration awards the inviter one point, up to 200 lifetime referral points. Registration awards no points to the new member. Exact successful retries do not award again; existing rewards above the cap are not revoked. Check available, reserved, and total points at `GET /api/v1/members/{wallet_address}`.
+
+Each wallet may redeem points for up to three calls per UTC day across eligible services. In-flight or uncertain executions occupy a slot on their reservation day until released; a settled retry does not consume another slot. Points-funded image input must be inline base64, at most 128 KiB decoded and 256×256 pixels.
+
+Registration IPs are best-effort: forwarded headers are unauthenticated and can be spoofed, while shared IPs can prevent legitimate registrations. Wallet signatures prove key control, not unique identity; the dotcode itself does not authenticate ownership.
+
+## Payment and execution
+
+For paid tools, provide `payer_address` and request an invoice. Sign `challengeToSign`, then resubmit the same inputs with `invoice_id` and `signature` in MCP `_meta["x402/payment"]`, plus `tx_hash` for Base USDC or `method: "points"` for eligible services. Invoice details are returned in `_meta["x402/payment-required"]`. MCP settlement failures set `isError` and expose the underlying status in `_meta["x402/payment-error"].status_code`; a tool-level error may use HTTP 200.
+
+### Step-by-step payment
+
+1. Call the selected tool with its normal arguments and `payer_address`. Read `invoiceId`, `challengeToSign`, network, recipient and amount from `_meta["x402/payment-required"]`.
+2. Sign the exact `challengeToSign` text with the payer wallet using EIP-191 `personal_sign`. Never send your private key.
+3. For USDC, transfer the invoice amount of native USDC on Base to the invoice recipient and retain the transaction hash. For points, skip the transfer and use `method: "points"` instead.
+4. Call the same tool again with identical arguments and an MCP `params._meta` object like the following, replacing each placeholder:
 
 ```json
 {
-  "mcpServers": {
-    "a2a-base-guard": {
-      "url": "https://a2a.musefish.trade/mcp"
-    }
+  "x402/payment": {
+    "method": "points",
+    "invoice_id": "<invoiceId>",
+    "payer_address": "<payer wallet address>",
+    "signature": "<EIP-191 signature>"
   }
 }
 ```
 
----
+For USDC, omit `method` and add `"tx_hash": "<transaction hash>"`. Do not combine a transaction hash with points. For the REST equivalents, request the invoice first, then repeat the same inputs with `invoice_id`, `payer_address` and `signature`; use the HTTP header `X-A2A-Payment-Method: points` for points, or include `tx_hash` for USDC. Invoices expire after five minutes. Partial points payments are not supported.
 
-### 3. Smithery.ai & Open MCP Registries
+Verified on-chain and points calls share one backend execution slot per process. Up to 16 verified on-chain calls may wait for 60 seconds; points calls are rejected when the backend is busy or paid calls are waiting. A running points call is not interrupted. API and MCP request bodies have a 15-second read deadline and 15 MiB limit.
 
-Install directly into your local agent runtime using the Smithery CLI:
+After dispatch, a failed or interrupted operation can have an uncertain outcome. Automatic redispatch is disabled, and backend admission can be quarantined until an operator confirms the remote task has stopped. The quarantine is process-local and does not survive restart; there is no automatic on-chain reconciliation or refund. Points remain reserved until an operator verifies the outcome and reconciles the hold. The queue deadline is not a backend execution deadline.
 
-```bash
-npx -y @smithery/cli install a2a-base-guard --client claude
-```
+Alipay `Payment-Proof` service redemption is disabled pending authenticated settlement; do not use it to unlock services.
 
----
+## Administration
 
-## 🛠️ Tool Specifications
+Configure `ADMIN_SESSION_TOKEN`, `CF_TURNSTILE_SITE_KEY`, and `CF_TURNSTILE_SECRET_KEY` for the admin dashboard. API clients can authenticate using `X-Admin-Token`. Existing blacklist entries require authenticated manual review and removal.
 
-This server strictly conforms to the **Model Context Protocol (2024-11-05)** specification, supporting `initialize`, `ping`, `tools/list`, and `tools/call`.
+## Links
 
-### Tool 1: `check_base_token_safety`
-
-Performs an on-chain bytecode safety assessment and liquidity dehydrator report for any token contract on Base.
-
-- **Pricing**: 0.01 USDC ($0.01)
-
-#### Input Schema
-```json
-{
-  "type": "object",
-  "properties": {
-    "token_address": {
-      "type": "string",
-      "description": "Base ERC-20 contract hex address (e.g. 0x4200000000000000000000000000000000000006 for WETH)"
-    }
-  },
-  "required": ["token_address"]
-}
-```
-
-#### Example Response
-```json
-{
-  "status": "SAFE",
-  "token_address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-  "symbol": "USDC",
-  "security_report": {
-    "honeypot_risk": false,
-    "buy_tax_bps": 0,
-    "sell_tax_bps": 0,
-    "ownership_renounced": true,
-    "has_blacklist_privilege": false
-  },
-  "market_snapshot": {
-    "liquidity_usd": 482500000,
-    "volume_24h": 128400000,
-    "fdv": 482500000
-  }
-}
-```
-
----
-
-### Tool 2: `simulate_mev_route_safety`
-
-Executes multi-call routes in a clean, read-only EVM sandbox (EPH-02) to detect sandwich attacks, state discrepancies, reentrancy traps, and slippage anomalies before transaction broadcasting.
-
-- **Pricing**: 1.50 USDC ($1.50)
-
-#### Input Schema
-```json
-{
-  "type": "object",
-  "properties": {
-    "target_address": {
-      "type": "string",
-      "description": "Smart contract address on Base"
-    },
-    "calldata": {
-      "type": "string",
-      "description": "Hex encoded calldata (e.g. 0x06fdde03)"
-    },
-    "value": {
-      "type": "integer",
-      "description": "Native ETH value in wei (default 0)"
-    }
-  },
-  "required": ["target_address"]
-}
-```
-
-#### Example Response
-```json
-{
-  "status": "SUCCESS",
-  "gas_used": 142850,
-  "reverted": false,
-  "state_diff_summary": {
-    "transfers_detected": 2,
-    "intermediate_balance_loss": false,
-    "slippage_protected": true
-  }
-}
-```
-
----
-
-### Tool 3: `fast_code_audit` (New 🚀)
-
-Zero-refusal, lightning-fast smart contract and code security audit powered by local Qwen3.5-9B (throughput ~93 t/s on RTX 5070 Ti). Identifies honeypots, malicious backdoors, reentrancy vulnerabilities, transfer tax traps, and hidden mints with zero moralizing refusal.
-
-- **Pricing**: 0.02 USDC ($0.02)
-- **Privacy Model**: Pure ephemeral memory execution (Zero log retention, no prompt or output persistence).
-
-#### Input Schema
-```json
-{
-  "type": "object",
-  "properties": {
-    "prompt": {
-      "type": "string",
-      "description": "Solidity code snippet, contract logic, or security question to audit (Max 16,384 chars)"
-    },
-    "system_prompt": {
-      "type": "string",
-      "description": "Optional customized system role prompt"
-    }
-  },
-  "required": ["prompt"]
-}
-```
-
-#### Example Response
-```json
-{
-  "status": "SUCCESS",
-  "model": "Qwen3.5-9B-Uncensored-Aggressive",
-  "audit_report": "### Critical Findings:\n- [CRITICAL] Hidden Owner Backdoor: Owner can freeze any account.\n- [HIGH] Reentrancy in withdraw(): State updated after transfer.",
-  "latency_ms": 22384.27,
-  "tokens_consumed": 2168,
-  "security_notice": "Pure ephemeral memory inference. Zero retention, no logging."
-}
-```
-
----
-
-### Tool 4: `deep_protocol_reasoning` (New 🚀)
-
-Deep protocol architecture deconstruction and unconstrained logic deduction powered by local Qwen3.6-35B MoE. Analyzes multi-contract cross-chain interactions, mathematical flashloan constraints, game-theoretic attack vectors, and protocol edge cases.
-
-- **Pricing**: 0.10 USDC ($0.10)
-- **Architecture**: 35B MoE with 256k context depth.
-
-#### Input Schema
-```json
-{
-  "type": "object",
-  "properties": {
-    "prompt": {
-      "type": "string",
-      "description": "Complex protocol architecture, mathematical arbitrage model, or system design to evaluate (Max 16,384 chars)"
-    },
-    "system_prompt": {
-      "type": "string",
-      "description": "Optional customized system role prompt"
-    }
-  },
-  "required": ["prompt"]
-}
-```
-
-#### Example Response
-```json
-{
-  "status": "SUCCESS",
-  "model": "Qwen3.6-35B-A3B-Uncensored",
-  "reasoning_report": "### Mathematical Protocol Proof:\n1. Flashloan invariant Δx · Δy >= k is strictly violated when slippage exceeds 32 bps under multi-pool pool balancing...\n2. Arbitrage convergence theorem proof shows dead-lock condition at block boundary.",
-  "latency_ms": 31250.40,
-  "tokens_consumed": 3890,
-  "security_notice": "Pure ephemeral memory inference. Zero retention, no logging."
-}
-```
-
----
-
-## 💳 Autonomous Settlement: x402 Protocol
-
-This server integrates the **Coinbase x402 v2 (Payment Required)** standard for machine-to-machine micropayments:
-
-1. When calling via standard HTTP REST or MCP `tools/call`, an unauthenticated request receives a structured `HTTP 402` with an invoice ID, challenge text to sign, and exact deposit requirements.
-2. The agent transfers the specified amount of native Base USDC (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`) to the designated gateway wallet (`0xA75E1a201552Cad0282d01C09DC95d9559642FBb`).
-3. Resending the request with `tx_hash`, `invoice_id`, `payer_address`, and an EIP-191 cryptographic payment signature immediately clears the invoice and delivers the verified payload.
-
----
-
-## 🌐 Public Discovery & Agent Metadata
-
-- **MCP Endpoint**: `https://a2a.musefish.trade/mcp`
-- **Machine Discovery (AEO)**: `https://a2a.musefish.trade/llms.txt`
-- **x402 Specification**: `https://a2a.musefish.trade/.well-known/x402-manifest.json`
-- **OpenAI Compatible Plugin**: `https://a2a.musefish.trade/.well-known/ai-plugin.json`
-- **Verified Listing**: Indexed on [the402.dev](https://the402.dev) with verified `answers 402` status.
-
----
-
-## 📄 License
-
-Distributed under the [Apache-2.0 License](LICENSE).
+- Gateway: https://a2a.musefish.trade/
+- MCP: https://a2a.musefish.trade/mcp
+- Agent discovery: https://a2a.musefish.trade/llms.txt
+- x402 manifest: https://a2a.musefish.trade/.well-known/x402-manifest.json
+- License: [Apache-2.0](LICENSE)
