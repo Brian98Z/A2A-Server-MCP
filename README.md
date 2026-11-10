@@ -66,7 +66,9 @@ For proof of work, find a canonical nonnegative decimal counter such that SHA-25
 
 Each eligible referred registration awards the inviter one point, up to 200 lifetime referral points. Registration awards no points to the new member. Exact successful retries do not award again; existing rewards above the cap are not revoked. Check available, reserved, and total points at `GET /api/v1/members/{wallet_address}`.
 
-Each wallet may redeem points for up to three calls per UTC day across eligible services. In-flight or uncertain executions occupy a slot on their reservation day until released; a settled retry does not consume another slot. Points-funded image input must be inline base64, at most 128 KiB decoded and 256×256 pixels.
+Promotional points are limited to three service calls per wallet per UTC day; purchased points are not subject to that limit. Service concurrency limits still apply.
+
+Members can purchase points through Alipay on the website. Agent service calls support Base USDC or membership points.
 
 Registration IPs are best-effort: forwarded headers are unauthenticated and can be spoofed, while shared IPs can prevent legitimate registrations. Wallet signatures prove key control, not unique identity; the dotcode itself does not authenticate ownership.
 
@@ -98,7 +100,9 @@ Verified on-chain and points calls share one backend execution slot per process.
 
 After dispatch, a failed or interrupted operation can have an uncertain outcome. Automatic redispatch is disabled, and backend admission can be quarantined until an operator confirms the remote task has stopped. The quarantine is process-local and does not survive restart; there is no automatic on-chain reconciliation or refund. Points remain reserved until an operator verifies the outcome and reconciles the hold. The queue deadline is not a backend execution deadline.
 
-Alipay `Payment-Proof` service redemption is disabled pending authenticated settlement; do not use it to unlock services.
+## Alipay
+
+Alipay web payment collection is integrated. It is separate from MCP tool settlement and membership points.
 
 ## Administration
 
