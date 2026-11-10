@@ -1,0 +1,13 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "trade.musefish.a2a/a2a-gateway",
+  "title": "A2A Gateway — Base Token Guard & x402 Settlement",
+  "description": "Free membership with 2 points on signup — one command registers a wallet and starts calling. Pre-trade Base token risk verdicts, EVM route simulation and code audits, paid per call in USDC over x402.",
+  "version": "2.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://a2a.musefish.trade/mcp"
+    }
+  ]
+}
