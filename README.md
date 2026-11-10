@@ -18,6 +18,14 @@ Use Streamable HTTP with MCP protocol version `2025-03-26`:
 
 Call `tools/list` for current input schemas. The legacy JSON-RPC endpoint is `/mcp-legacy`.
 
+### Service window
+
+Paid execution runs **Mon–Fri 11:00–22:00 (UTC+8)**. Outside that window the paid endpoints return `503` with `Retry-After` and a machine-readable window — **no invoice is issued and no payment is expected**. Free endpoints (registration, member lookup, catalog, `/status.json`) stay available.
+
+```bash
+curl https://a2a.musefish.trade/status.json
+```
+
 ### Client setup
 
 In Cursor, add a new MCP server named `a2a-base-guard`, select Streamable HTTP, and use the URL above. In Claude Desktop, use its remote MCP connector where available; client versions differ in support for URL-based entries in `claude_desktop_config.json`. After connecting, refresh the server's tools and call `tools/list`. See the [integration guide](DISTRIBUTION_GUIDE.md) for additional discovery endpoints.
@@ -47,7 +55,16 @@ For example, start a token report with `{"token_address":"0x42000000000000000000
 
 ## Membership and referrals
 
-Register in one request through `generate_a2a_invitation` or `POST /api/v1/invitations`. Generate a random 32-byte lowercase hexadecimal nonce and an expiry no more than 300 seconds ahead; sign the registration message with EIP-191, solve the proof of work, then submit `wallet_address`, `nonce`, `expires_at`, `signature`, and `pow_counter`. `chain_id` defaults to 8453; `inviter_code` is optional. Fetch the exact message and current difficulty with `get_a2a_registration_protocol` or `GET /api/v1/invitations/protocol`.
+Fastest path — one command (requires `eth-account` and `requests`):
+
+```bash
+pip install eth-account requests
+curl -fsSL https://a2a.musefish.trade/register_a2a.py | python3 -
+```
+
+The script generates a wallet (or uses `PRIVATE_KEY`), signs EIP-191, solves the SHA-256 proof of work, and registers in one request. New members get **2 free points**; joining with `--inviter CODE` gives 3, and the inviter earns 1 point (lifetime cap 200).
+
+Manual route: `generate_a2a_invitation` or `POST /api/v1/invitations`. Generate a random 32-byte lowercase hexadecimal nonce and an expiry no more than 300 seconds ahead; sign the registration message with EIP-191, solve the proof of work, then submit `wallet_address`, `nonce`, `expires_at`, `signature`, and `pow_counter`. `chain_id` defaults to 8453; `inviter_code` is optional. Fetch the exact message and current difficulty with `get_a2a_registration_protocol` or `GET /api/v1/invitations/protocol`.
 
 Sign the following exact UTF-8 message with EIP-191 `personal_sign`, using LF line breaks and no trailing newline:
 
@@ -107,6 +124,8 @@ Alipay web payment collection is integrated. It is separate from MCP tool settle
 ## Administration
 
 Configure `ADMIN_SESSION_TOKEN`, `CF_TURNSTILE_SITE_KEY`, and `CF_TURNSTILE_SECRET_KEY` for the admin dashboard. API clients can authenticate using `X-Admin-Token`. Existing blacklist entries require authenticated manual review and removal.
+
+The dashboard shows IP source analysis (country, city, ASN/organization per client IP) and a global region share computed from public request volume. Public IPs are resolved once through `ipwho.is` and cached in the `ip_geo` table; resolution runs in background threads so `/api/admin/metrics` stays fast. Loopback and private addresses are labeled local and excluded from the regional percentage denominator. Set `GEOIP_PROVIDER=off` to disable external lookups (cached rows remain visible); `IP_ORIGIN_WINDOW_SECONDS` (default 604800), `GEOIP_WORKERS` and `GEOIP_TIMEOUT` tune the aggregation window and resolver.
 
 ## Links
 
