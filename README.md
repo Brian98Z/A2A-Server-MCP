@@ -50,7 +50,9 @@ python skills/a2a-musefish-gateway/scripts/selfcheck.py --register
 
 ### Availability
 
-There is no office-hours or weekend gate: calls are accepted while the service runs. Explicit maintenance or a real backend outage returns `503` with `Retry-After` **before** any invoice is issued, so no payment is owed. Probe readiness first:
+**Advisory service window: Monday–Friday, 11:00–22:00 (UTC+8).** The gateway is actively monitored during this window. Outside it, maintenance and backend restarts are more likely and a call may return `503`.
+
+The window is information only — the clock never blocks a call. A `503` is returned **before** any invoice is issued, so no payment is owed. Probe readiness first:
 
 ```bash
 curl https://a2a.musefish.trade/status.json

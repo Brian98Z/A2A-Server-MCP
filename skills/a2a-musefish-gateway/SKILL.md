@@ -22,6 +22,7 @@ Server facts you can rely on:
 | Invoice TTL | 300 seconds |
 | Registration script | `https://a2a.musefish.trade/register_a2a.py` |
 | Availability probe | `https://a2a.musefish.trade/status.json` |
+| Advisory service window | Monday–Friday 11:00–22:00 (UTC+8) — information only, calls are never blocked by the clock |
 
 ## When to use this skill
 
@@ -218,6 +219,16 @@ The wallet must already be registered before ordering.
 | `remove_image_background` | Transparent PNG background removal | 0.01 | 1 |
 
 Input requirements, response shapes and worked examples: `references/mcp-tools.md`.
+
+## Service window (advisory)
+
+The gateway is actively monitored **Monday–Friday, 11:00–22:00 (UTC+8)**. Outside that
+window it keeps accepting calls, but maintenance and backend restarts are more likely,
+so `503` is more probable. The clock is not enforced: no request is rejected because
+of the hour. A `503` is returned before any invoice is issued, so nothing is owed.
+
+Plan long or paid runs inside the window and treat an out-of-window `503` as expected
+rather than an outage.
 
 ## Errors and what to do
 
