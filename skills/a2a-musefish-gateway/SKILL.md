@@ -230,15 +230,32 @@ of the hour. A `503` is returned before any invoice is issued, so nothing is owe
 Plan long or paid runs inside the window and treat an out-of-window `503` as expected
 rather than an outage.
 
+### Cold backends never produce a 503 (and never an invoice)
+
+Model-backed tools are warmed on demand. The first unpaid call returns a normal tool
+result with `isError: true` and:
+
+```json
+{"status":"warming","tool":"fast_code_audit","model":"fast","retry_after_s":10,
+ "invoice_issued":false,"payment_owed":false}
+```
+
+Wait `retry_after_s` (10 s fast, 20 s deep) and retry the identical call. The invoice is
+issued only when the model is ready, so an agent can never pay for a cold backend. A
+`503` now means genuine maintenance only. REST endpoints mirror this with `202 Accepted`,
+`Retry-After`, and the same JSON body.
+
 ## Errors and what to do
 
 | Symptom | Meaning | Action |
 |---|---|---|
 | `isError: true` with `invoiceId` | Payment required, invoice issued | Pay (points or USDC) and re-call within 300 s |
+| `isError: true` with `status: "warming"` | Backend cold; warm-up started, **no invoice** | Wait `retry_after_s`, repeat the same call |
 | HTTP 400 `invoice_id, payer_address, and signature are strictly required` | Missing payment metadata | Send all three fields |
 | HTTP 409 | Settlement outcome uncertain | **Do not auto-retry.** Query the member balance, then decide |
 | HTTP 429 `Daily promotional-points redemption limit` | 3 promo redemptions already used today (UTC) | Wait for the next UTC day, or pay with purchased points/USDC |
-| HTTP 503 with `Retry-After` | Backend offline or daemon cold start; no invoice issued | Retry after the delay; no payment is owed |
+| HTTP 503 with `Retry-After` | Gateway in maintenance (not a cold backend) | Retry after the delay; no payment is owed |
+| HTTP 202 on a REST endpoint | Backend warming (`status: "warming"`) | Wait `Retry-After`, repeat the call |
 | HTTP 401 on Alipay endpoints | Wallet session missing | Log in with the wallet signature flow |
 
 ## Guardrails

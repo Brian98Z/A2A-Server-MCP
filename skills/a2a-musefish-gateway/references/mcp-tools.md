@@ -139,6 +139,25 @@ Payment required:
 Sign `challengeToSign` verbatim with EIP-191 `personal_sign` using the payer wallet.
 The recovered address must equal `payer_address`.
 
+## Cold-backend warming (not a 503)
+
+`fast_code_audit` and `deep_protocol_reasoning` run on an on-demand model. If the unpaid
+call arrives while the model is stopped or another model is loaded, the gateway starts
+the request's model in the background and returns:
+
+```json
+{"jsonrpc":"2.0","id":3,"result":{
+  "isError":true,
+  "structuredContent":{"status":"warming","tool":"deep_protocol_reasoning",
+    "model":"deep","retry_after_s":20,"invoice_issued":false,"payment_owed":false,
+    "detail":"The model backend is starting. No invoice was issued and no payment is owed."},
+  "content":[{"type":"text","text":"{…same object…}"}]}}
+```
+
+Retry the identical call after `retry_after_s`; the invoice appears only when the model
+answers `is_running: true` on the daemon. No payment, hold, or invoice is created while
+warming.
+
 ## Settlement error semantics
 
 | Status | Where | Meaning |
@@ -147,4 +166,4 @@ The recovered address must equal `payer_address`.
 | 403 | `error.message` | Signature does not match payer |
 | 409 | `_meta["x402/payment-error"].status_code` | Settlement outcome uncertain; do not retry blindly |
 | 429 | `error.message` | Promotional-points daily cap (3 per UTC day) |
-| 503 | `error.message` | Backend offline or model daemon cold; no invoice issued |
+| 503 | `error.message` | Gateway maintenance only; no invoice issued |

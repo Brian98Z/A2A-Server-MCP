@@ -1,5 +1,9 @@
 # Payments — points, USDC on Base, Alipay
 
+Before any invoice exists, the gateway verifies that the requested backend is ready and
+warms it if needed. A `warming` tool result carries no invoice and no payment obligation —
+wait `retry_after_s`, repeat the same call, then pay only the invoice that follows.
+
 All amounts are USDC with 6 decimals unless stated otherwise. The gateway never accepts
 a payment without a bound invoice: the invoice fixes the tool, the canonical argument
 hash, the amount and a 300-second expiry.

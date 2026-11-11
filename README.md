@@ -54,6 +54,20 @@ python skills/a2a-musefish-gateway/scripts/selfcheck.py --register
 
 The window is information only — the clock never blocks a call. A `503` is returned **before** any invoice is issued, so no payment is owed. Probe readiness first:
 
+### Cold backends warm up instead of failing
+
+AI tools (`fast_code_audit`, `deep_protocol_reasoning`) run on an on-demand local model.
+The first unpaid call **starts the model and returns a `warming` result instead of `503`**;
+no invoice is issued and nothing is owed. Retry the same call after the advertised
+`retry_after_s` (10 s for `fast`, 20 s for `deep`) and the invoice is issued only once the
+backend is ready. REST equivalents return `202 Accepted` with `Retry-After` and
+`{"status":"warming","invoice_issued":false}`.
+
+```json
+{"isError":true,"structuredContent":{"status":"warming","model":"fast",
+ "retry_after_s":10,"invoice_issued":false,"payment_owed":false}}
+```
+
 ```bash
 curl https://a2a.musefish.trade/status.json
 ```
