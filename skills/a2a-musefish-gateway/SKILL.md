@@ -160,7 +160,9 @@ python scripts/pay_with_points.py \
 
 The helper performs the complete loop: call → receive `402`-style invoice in
 `structuredContent` → sign `challengeToSign` → re-call with
-`_meta["x402/payment"]` → print the settled result.
+`_meta["x402/payment"]` → print the settled result. If a model-backed tool is cold,
+the first call instead returns `warming`/`offline` with `invoice_issued:false`; the
+helper reports that and you retry after `retry_after_s`.
 
 Expected: a JSON verdict with `market`, `security`/`verdict` fields, and the balance
 dropping by 1 point. If the balance was 2 and two calls were made, it reads 0.
@@ -223,12 +225,13 @@ Input requirements, response shapes and worked examples: `references/mcp-tools.m
 ## Service window (advisory)
 
 The gateway is actively monitored **Monday–Friday, 11:00–22:00 (UTC+8)**. Outside that
-window it keeps accepting calls, but maintenance and backend restarts are more likely,
-so `503` is more probable. The clock is not enforced: no request is rejected because
-of the hour. A `503` is returned before any invoice is issued, so nothing is owed.
+window it keeps accepting calls, but planned maintenance and backend restarts are more
+likely, so a `503` is possible. The clock is not enforced: no request is rejected
+because of the hour, and admission depends on runtime availability, not office hours.
+A `503` is returned before any invoice is issued, so nothing is owed.
 
-Plan long or paid runs inside the window and treat an out-of-window `503` as expected
-rather than an outage.
+Plan long operational runs inside the window; a `503` there is genuine maintenance,
+not admission control.
 
 ### Cold backends never produce a 503 (and never an invoice)
 

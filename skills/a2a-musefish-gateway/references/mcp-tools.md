@@ -37,7 +37,10 @@ with a freemium preview; after settlement the same call returns the full report:
               "payer_address":"0xYourWallet"}}
 ```
 
-`target_address` required; `calldata` optional hex; `value` optional wei integer.
+`target_address` required; `calldata` optional, must be `0x`-prefixed even-length hex
+(≤10 KB); `value` optional non-negative integer below 2^256. Malformed `calldata`,
+negative `value` and non-numeric query values are rejected **before** an invoice is
+issued.
 Runs a read-only trace and reports reverts, slippage traps, fee-on-transfer hooks and
 gas bombs.
 
@@ -50,8 +53,9 @@ gas bombs.
               "payer_address":"0xYourWallet"}}
 ```
 
-Backed by a local Qwen model. If the model daemon is cold, the gateway returns 503
-with `Retry-After` **before** issuing an invoice.
+Backed by a local Qwen model. If the model daemon is cold, the gateway returns a
+`warming` tool result (or REST `202`) with `retry_after_s` and issues **no** invoice;
+see [Cold-backend warming](#cold-backend-warming-not-a-503).
 
 ### deep_protocol_reasoning — 0.10 USDC / 10 points
 

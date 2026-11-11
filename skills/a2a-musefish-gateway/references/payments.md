@@ -64,7 +64,10 @@ exact USDC contract, `Transfer` event, recipient equals `payTo`, sender equals
 `payer_address`, amount ≥ invoice amount.
 
 If the transaction is mined slowly, retry the settlement call with the same tuple; a
-409 means the outcome is uncertain — reconcile the member balance before retrying.
+409 means the outcome is uncertain: the hold stays reserved until reconciliation.
+Execution failures (backend error after dispatch) release points automatically; an
+on-chain payment whose execution failed is reconciled manually within 24 hours.
+Reconcile before retrying; never blind-retry a 409.
 
 ## 3. Alipay packages (CNY, human checkout)
 

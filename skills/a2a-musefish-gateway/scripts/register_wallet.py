@@ -28,12 +28,14 @@ from eth_account import Account
 from eth_account.messages import encode_defunct
 
 DEFAULT_BASE = os.environ.get("A2A_BASE_URL", "https://a2a.musefish.trade")
+A2A_UA = os.environ.get("A2A_UA", "OMP-A2A-Agent/1.0 (registration)")
+HEADERS = {"User-Agent": A2A_UA, "Accept": "application/json"}
 DOMAIN = "a2a.musefish.trade"
 POW_PREFIX = "a2a-registration-pow-v1:"
 
 
 def protocol(base: str) -> dict:
-    r = requests.get(f"{base}/api/v1/invitations/protocol", timeout=20)
+    r = requests.get(f"{base}/api/v1/invitations/protocol", timeout=20, headers=HEADERS)
     r.raise_for_status()
     return r.json()
 
@@ -74,7 +76,8 @@ def save_private_json(path: Path, data: dict) -> None:
                 raise OSError("current Windows account could not be identified")
             os.close(fd)
             fd = -1
-            result = subprocess.run(["icacls", temporary, "/inheritance:r", "/grant:r", f"{username}:F"], capture_output=True, text=True, check=False)
+            result = subprocess.run(["icacls", temporary, "/inheritance:r", "/grant:r", f"{username}:F"],
+                            capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
             if result.returncode:
                 raise OSError("could not set owner-only Windows file permissions")
             fd = os.open(temporary, os.O_WRONLY | os.O_TRUNC)
@@ -133,7 +136,7 @@ def main() -> int:
             print("could not read a valid saved registration request", file=sys.stderr)
             return 1
         try:
-            resp = requests.post(f"{base}/api/v1/invitations", json=payload, timeout=30)
+            resp = requests.post(f"{base}/api/v1/invitations", json=payload, timeout=30, headers=HEADERS)
         except requests.RequestException:
             print(f"registration response unavailable; retry with --resume {args.resume}", file=sys.stderr)
             return 1
@@ -189,7 +192,7 @@ def main() -> int:
     print(f"signed request saved securely: {saved_path.resolve()}")
     print(f"proof-of-work: {bits} bits solved in {elapsed:.1f}s (counter {counter})")
     try:
-        resp = requests.post(f"{args.base_url}/api/v1/invitations", json=payload, timeout=30)
+        resp = requests.post(f"{args.base_url}/api/v1/invitations", json=payload, timeout=30, headers=HEADERS)
     except requests.RequestException:
         if saved_path:
             print(f"registration response unavailable; retry the same request with --resume {saved_path}", file=sys.stderr)
