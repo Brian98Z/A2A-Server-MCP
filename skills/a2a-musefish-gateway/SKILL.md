@@ -240,10 +240,11 @@ result with `isError: true` and:
  "invoice_issued":false,"payment_owed":false}
 ```
 
-Wait `retry_after_s` (10 s fast, 20 s deep) and retry the identical call. The invoice is
-issued only when the model is ready, so an agent can never pay for a cold backend. A
-`503` now means genuine maintenance only. REST endpoints mirror this with `202 Accepted`,
-`Retry-After`, and the same JSON body.
+`status` is `offline` instead of `warming` when the daemon itself is unreachable; the
+retry advice is the same. Wait `retry_after_s` (10 s fast, 20 s deep) and retry the
+identical call. The invoice is issued only when the model is ready, so an agent can
+never pay for a cold backend. A `503` now means genuine maintenance only. REST endpoints
+mirror this with `202 Accepted`, `Retry-After`, and the same JSON body.
 
 ## Errors and what to do
 

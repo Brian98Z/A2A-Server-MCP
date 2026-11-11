@@ -9,6 +9,7 @@
 | `409` on settlement | earlier settlement attempt uncertain | check balance first; create a new invoice only if nothing settled |
 | `429 Daily promotional-points redemption limit` | 3 promo redemptions today (UTC) | wait for the next UTC day or pay with purchased points/USDC |
 | `isError: true` with `status: "warming"` | model cold; warm-up started, no invoice | wait `retry_after_s`, repeat the identical call |
+| `isError: true` with `status: "offline"` | daemon temporarily unreachable (model switch/restart) | retry after ~20 s; no invoice exists |
 | `503` on `fast_code_audit`/`deep_protocol_reasoning` | gateway maintenance only | honor `Retry-After`, then retry |
 | Intermittent `503` outside Monday–Friday 11:00–22:00 (UTC+8) | outside the advisory service window; maintenance is more likely | retry inside the window; no payment is involved |
 | Registration `400` | nonce/expiry/pow mismatch | request a fresh protocol document; rebuild message with the same values |
