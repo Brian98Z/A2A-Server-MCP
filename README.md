@@ -147,6 +147,12 @@ Alipay web payment collection is integrated. It is separate from MCP tool settle
 
 Configure `ADMIN_SESSION_TOKEN`, `CF_TURNSTILE_SITE_KEY`, and `CF_TURNSTILE_SECRET_KEY` for the admin dashboard. API clients can authenticate using `X-Admin-Token`. Existing blacklist entries require authenticated manual review and removal.
 
+### Points console
+
+`/admin/points` is a standalone console for every point account in one place: member points (purchased and promotional), win-eligible game points, arcade-only granted points, and the points frozen in settlement holds. It reads `/api/admin/points?hours=24|168|720&include_test=0|1` and shows balances, per-reason flows for the selected window, top balances and spenders, a unified member/game ledger and a ledger-vs-balance reconciliation. Test wallets are excluded by default and can be toggled on.
+
+The main dashboard links to it from the header (`积分监控 →`); both the page and the API use the same admin cookie or `X-Admin-Token`.
+
 The dashboard shows IP source analysis (country, city, ASN/organization per client IP) and a global region share computed from public request volume. Public IPs are resolved once through `ipwho.is` and cached in the `ip_geo` table; resolution runs in background threads so `/api/admin/metrics` stays fast. Loopback and private addresses are labeled local and excluded from the regional percentage denominator. Set `GEOIP_PROVIDER=off` to disable external lookups (cached rows remain visible); `IP_ORIGIN_WINDOW_SECONDS` (default 604800), `GEOIP_WORKERS` and `GEOIP_TIMEOUT` tune the aggregation window and resolver.
 
 ## Links
