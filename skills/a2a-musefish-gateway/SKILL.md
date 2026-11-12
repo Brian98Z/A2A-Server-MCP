@@ -1,6 +1,6 @@
 ---
 name: a2a-musefish-gateway
-description: Call the A2A Gateway MCP server (https://a2a.musefish.trade/mcp) to vet Base-mainnet tokens before trading, simulate EVM calldata, run AI code audits or deep protocol reasoning, and remove image backgrounds. Covers free wallet registration with signup points, the x402 402-to-invoice flow, points redemption signed with EIP-191, and USDC-on-Base or Alipay top-ups. Use whenever an agent needs pre-trade Base token verification, metered inference, or a pay-per-call security verdict.
+description: Call the A2A Gateway MCP server (https://a2a.musefish.trade/mcp) to vet Base-mainnet tokens before trading, simulate EVM calldata, run AI code audits or deep protocol reasoning, remove image backgrounds, and play the arcade slot machine with signed wallet auth. Covers free wallet registration with signup points, the x402 402-to-invoice flow, points redemption signed with EIP-191, and USDC-on-Base or Alipay top-ups. Use whenever an agent needs pre-trade Base token verification, metered inference, or a pay-per-call security verdict.
 license: Apache-2.0
 ---
 
@@ -107,12 +107,12 @@ This is the acceptance test for the skill. Run it once after installing.
 
 ### Step 1 — confirm the server is reachable
 
-Call `tools/list`. Expect 7 tools:
+Call `tools/list`. Expect 10 tools:
 
 ```
-generate_a2a_invitation, get_a2a_registration_protocol, check_base_token_safety,
-simulate_mev_route_safety, fast_code_audit, deep_protocol_reasoning,
-remove_image_background
+generate_a2a_invitation, get_a2a_registration_protocol, get_arcade_auth_message,
+slots_state, slots_spin, check_base_token_safety, simulate_mev_route_safety,
+fast_code_audit, deep_protocol_reasoning, remove_image_background
 ```
 
 ### Step 2 — register a wallet and receive signup points
@@ -220,7 +220,43 @@ The wallet must already be registered before ordering.
 | `deep_protocol_reasoning` | Deep protocol analysis (local MoE) | 0.10 | 10 |
 | `remove_image_background` | Transparent PNG background removal | 0.01 | 1 |
 
+Free tools (no payment):
+
+| Tool | Purpose |
+|---|---|
+| `get_a2a_registration_protocol` | Canonical registration message and proof-of-work difficulty |
+| `generate_a2a_invitation` | Register a wallet, receive signup points and a referral code |
+| `get_arcade_auth_message` | Canonical EIP-191 message that authorises arcade calls |
+| `slots_state` | Arcade balance, pity meter, session stats and recent spins |
+| `slots_spin` | One server-authoritative spin for 1 game point |
+
 Input requirements, response shapes and worked examples: `references/mcp-tools.md`.
+
+## Arcade — playing from an agent
+
+The arcade is a separate currency from membership points and is playable over MCP.
+
+```
+get_arcade_auth_message {wallet_address, nonce: 64 lowercase hex, expires_at: now+300}
+  -> sign the returned text with personal_sign (EIP-191)
+slots_state | slots_spin {wallet_address, nonce, expires_at, signature}
+```
+
+The signed text is domain-bound and every nonce is single use; replaying one returns
+`409`. Generate a fresh nonce per call.
+
+| Rule | Value |
+|---|---|
+| Stake | 1 game point per spin |
+| Prizes | 1 / 2 / 5 / 10 / 100 for three matching Cherry / Lemon / Bell / Seven / Diamond |
+| Pity | the 15th consecutive miss always pays; hit rate about 28.5%, RTP about 70% |
+| Granted points | 10-point welcome grant and 1 daily relief point are arcade-only |
+| Won points | the only game points that can pay points-rail calls; spent first, no 3/day promo cap |
+| Conversion | game points never convert back to membership points |
+
+A wallet that reaches zero receives one free point per UTC day, and only while it still
+holds at least one membership point. `slots_state` returns `relief` with `eligible`,
+`granted_today` and `next_at` so a client can explain the wait.
 
 ## Service window (advisory)
 
