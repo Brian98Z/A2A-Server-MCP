@@ -18,55 +18,9 @@ Use Streamable HTTP with MCP protocol version `2025-03-26`:
 
 Call `tools/list` for current input schemas. The legacy JSON-RPC endpoint is `/mcp-legacy`.
 
-### Install as an agent skill (persistent)
+### Service availability
 
-`skills/a2a-musefish-gateway/` packages the server as a portable Agent Skill: MCP setup,
-the free registration → points → first paid call test, and both payment rails
-(points/USDC over x402, Alipay top-up).
-
-```bash
-git clone https://github.com/Brian98Z/A2A-Server-MCP /tmp/a2a-server-mcp
-cp -r /tmp/a2a-server-mcp/skills/a2a-musefish-gateway ~/.claude/skills/
-```
-
-| Client | Skill location |
-|---|---|
-| Claude Code | `~/.claude/skills/a2a-musefish-gateway/` or `.claude/skills/…` |
-| OMP | `~/.omp/agent/skills/a2a-musefish-gateway/` |
-| Cursor / Cline / Windsurf | MCP entry above; optionally copy `references/mcp-tools.md` into the rules folder |
-| Codex CLI / generic agents | append the tool table from `references/mcp-tools.md` to `AGENTS.md` |
-
-Verify the install without spending anything:
-
-```bash
-python skills/a2a-musefish-gateway/scripts/selfcheck.py
-```
-
-Full onboarding test (registers a real wallet, then spends one signup point):
-
-```bash
-python skills/a2a-musefish-gateway/scripts/selfcheck.py --register
-```
-
-### Availability
-
-**Advisory service window: Monday–Friday, 11:00–22:00 (UTC+8).** The gateway is actively monitored during this window. Outside it, maintenance and backend restarts are more likely and a call may return `503`.
-
-The window is information only — the clock never blocks a call. A `503` is returned **before** any invoice is issued, so no payment is owed. Probe readiness first:
-
-### Cold backends warm up instead of failing
-
-AI tools (`fast_code_audit`, `deep_protocol_reasoning`) run on an on-demand local model.
-The first unpaid call **starts the model and returns a `warming` result instead of `503`**;
-no invoice is issued and nothing is owed. Retry the same call after the advertised
-`retry_after_s` (10 s for `fast`, 20 s for `deep`) and the invoice is issued only once the
-backend is ready. REST equivalents return `202 Accepted` with `Retry-After` and
-`{"status":"warming","invoice_issued":false}`.
-
-```json
-{"isError":true,"structuredContent":{"status":"warming","model":"fast",
- "retry_after_s":10,"invoice_issued":false,"payment_owed":false}}
-```
+There is no hardcoded business-hours or weekend closure: services are available whenever the gateway and requested backend are running. Planned maintenance and downstream outages return HTTP `503`; admission contention returns `429` with `Retry-After`. Neither response proves whether an earlier payment succeeded. Retain existing invoice/transaction identifiers and retry the same payment, never pay again.
 
 ```bash
 curl https://a2a.musefish.trade/status.json
@@ -98,17 +52,21 @@ For example, start a token report with `{"token_address":"0x42000000000000000000
 | `remove_image_background` | Transparent image background removal | 0.01 USDC or 1 point |
 | `generate_a2a_invitation` | Register and generate a referral code and SVG | Free |
 | `get_a2a_registration_protocol` | Get signing and proof-of-work parameters | Free |
+| `get_arcade_auth_message` | Canonical EIP-191 message to sign for arcade access | Free |
+| `slots_state` | Arcade balance, pity meter, session stats and recent spins | Free |
+| `slots_spin` | One server-authoritative spin for 1 game point (prizes 1/2/5/10/100) | Free |
 
 ## Membership and referrals
 
-Fastest path — one command (requires `eth-account` and `requests`):
+Fastest path — download the script locally (requires `eth-account` and `requests`):
 
 ```bash
 pip install eth-account requests
-curl -fsSL https://a2a.musefish.trade/register_a2a.py | python3 -
+curl -fsSLo register_a2a.py https://a2a.musefish.trade/register_a2a.py
+python3 register_a2a.py
 ```
 
-The script generates a wallet (or uses `PRIVATE_KEY`), signs EIP-191, solves the SHA-256 proof of work, and registers in one request. New members get **2 free points**; joining with `--inviter CODE` gives 3, and the inviter earns 1 point (lifetime cap 200).
+For a generated wallet, the script saves the private key and exact signed request before posting, in an owner-only credential file in the current directory (`0600` on POSIX; restricted to your Windows account). Protect this file like a password. If the response is lost, rerun `python3 register_a2a.py --resume a2a-registration-<wallet>.json` to retry the same nonce/payload; it does not create a new key or registration request. Existing wallet mode uses the `PRIVATE_KEY` environment variable (never a command-line argument) and saves the signed request for the same recovery flow. New members get **2 free points**; joining with `--inviter CODE` gives 3, and the inviter earns 1 point (lifetime cap 200).
 
 Manual route: `generate_a2a_invitation` or `POST /api/v1/invitations`. Generate a random 32-byte lowercase hexadecimal nonce and an expiry no more than 300 seconds ahead; sign the registration message with EIP-191, solve the proof of work, then submit `wallet_address`, `nonce`, `expires_at`, `signature`, and `pow_counter`. `chain_id` defaults to 8453; `inviter_code` is optional. Fetch the exact message and current difficulty with `get_a2a_registration_protocol` or `GET /api/v1/invitations/protocol`.
 
@@ -134,6 +92,24 @@ Promotional points are limited to three service calls per wallet per UTC day; pu
 Members can purchase points through Alipay on the website. Agent service calls support Base USDC or membership points.
 
 Registration IPs are best-effort: forwarded headers are unauthenticated and can be spoofed, while shared IPs can prevent legitimate registrations. Wallet signatures prove key control, not unique identity; the dotcode itself does not authenticate ownership.
+
+## Arcade: game points (homepage module)
+
+The homepage embeds a self-contained slot machine module (`assets/slots-module.js` + `assets/slots-module.css`, mounted on `[data-a2a-slots]`, anchored at `/#slots`). It is part of the landing page, not a separate route.
+
+Game points are a **separate currency** from membership points:
+
+| Rule | Value |
+|---|---|
+| Stake per spin | 1 game point |
+| Prizes | 1 / 2 / 5 / 10 / 100 game points for three matching Cherry / Lemon / Bell / Seven / Diamond |
+| Hit rate | ~28.5% of spins pay (27.3% weighted plus the 15-loss pity payout) |
+| Payout weights | 15% / 8% / 3.2% / 1% / 0.12%; RTP ≈ 70% |
+| Welcome grant | 10 arcade-only game points at registration (`game-signup:<wallet>`); wallets registered earlier receive the same once on their first spin (`game-welcome:<wallet>`) |
+| Service payment | **only won** game points can pay points-rail calls (spent first, before purchased and promotional points, and exempt from the 3-per-UTC-day promotional limit). Granted points — the 10-point welcome grant and the daily free point — are arcade-only and cannot pay for services |
+| Convertibility | none — game points never convert back to membership points |
+
+State and settlement: `GET /api/v1/slots/state` (anonymous-safe; adds balance, stats and history with a wallet session) and `POST /api/v1/slots/spin` (requires the `a2a_wallet_session` cookie and a same-origin request). Every movement lands in `game_ledger` (`starter`, `slots_spin`, `slots_win`, `service_spend`); a spin debits the stake and credits the prize in one SQLite transaction. Service settlement records the split in `points_holds.purchased_points` / `game_points` / `referral_points`.
 
 ## Payment and execution
 
