@@ -111,6 +111,49 @@ Sign this message to register this wallet.
 Proof of work: `SHA-256("a2a-registration-pow-v1:" + sha256(message) + ":" + sha256(signature) + ":" + counter)`
 must have `bits` leading zero bits. `sha256()` values are lowercase hex.
 
+### get_arcade_auth_message
+
+```json
+{"name":"get_arcade_auth_message",
+ "arguments":{"wallet_address":"0x…","nonce":"<64 lowercase hex>","expires_at":1790000000}}
+```
+
+Returns the canonical message to sign with `personal_sign`:
+
+```
+A2A Arcade Access
+Domain: https://a2a.musefish.trade
+Wallet: {wallet_lower}
+Nonce: {64_lowercase_hex}
+Expires: {unix_seconds}
+Sign this message to play the A2A arcade.
+```
+
+`expires_at` must be within 300 seconds of now.
+
+### slots_state
+
+```json
+{"name":"slots_state",
+ "arguments":{"wallet_address":"0x…","nonce":"<64 hex>","expires_at":1790000000,"signature":"0x…"}}
+```
+
+Returns `balance` (`game_points` = redeemable winnings, `game_bonus_points` = arcade-only
+grants, `total_game_points`), `relief` (`points`, `min_member_points`, `eligible`,
+`granted_today`, `next_at`), `stats` (spins, wins, streaks, pity counter) and the last 12
+spins. Reading the state also applies the daily free point when the wallet qualifies.
+
+### slots_spin
+
+```json
+{"name":"slots_spin",
+ "arguments":{"wallet_address":"0x…","nonce":"<64 hex>","expires_at":1790000000,"signature":"0x…"}}
+```
+
+Returns `reels`, `tier` (0 = miss, otherwise the prize), `near_miss`, `pity`, `balance`
+and `stats`. Errors: `401` signature/wallet mismatch, `409` nonce replay, `429` the reels
+are still spinning (0.5 s minimum interval), `402` no game points.
+
 ## Response envelope
 
 Settled call:
