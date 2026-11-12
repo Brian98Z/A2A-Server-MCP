@@ -129,7 +129,9 @@ def main() -> int:
 
     status, listing = mcp({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}, base)
     names = [t["name"] for t in (listing.get("result", {}).get("tools", []) if isinstance(listing, dict) else [])]
-    passed.append(check("tools/list", status == 200 and len(names) >= 7, ", ".join(names)))
+    arcade = {"get_arcade_auth_message", "slots_state", "slots_spin"}
+    passed.append(check("tools/list", status == 200 and len(names) >= 10 and arcade <= set(names),
+                        ", ".join(names)))
 
     status, proto = http("GET", f"{base}/api/v1/invitations/protocol")
     passed.append(check("registration protocol", status == 200 and "pow" in (proto or {}),
