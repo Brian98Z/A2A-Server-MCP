@@ -15,6 +15,10 @@
 | Registration `400` | nonce/expiry/pow mismatch | request a fresh protocol document; rebuild message with the same values |
 | PoW takes minutes | difficulty raised by operator | read `pow.bits` from the protocol instead of assuming 20 |
 | Alipay `401` | wallet session cookie missing | run the login step again |
+| Arcade `409 This arcade auth nonce was already used` | the nonce was already spent | sign a fresh nonce for every arcade call |
+| Arcade `400 expires_at must be within the next 300 seconds` | stale or far-future expiry | request a new message and sign within five minutes |
+| Arcade `402 Insufficient game points` | balance is empty and today's relief point is spent | wait for the next UTC day; granted points never pay for services |
+| `429 Too many remote image fetches` | more than 6 remote image fetches a minute from one IP | back off for a minute or send inline Base64 |
 | Alipay `403 Register this wallet` | wallet not a member | run `scripts/register_wallet.py` first |
 
 Health probes:
