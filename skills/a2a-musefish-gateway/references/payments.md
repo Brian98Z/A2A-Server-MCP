@@ -41,8 +41,9 @@ prints the settled payload. It refuses to spend when the balance is insufficient
 
 ## 2. USDC on Base (x402)
 
+0. For `check_base_token_safety`, call with only `token_address` first. The free preview needs no wallet or invoice. Add `payer_address` for the invoice to the full report.
 1. Call the tool with `payer_address` and no payment metadata.
-2. Read `structuredContent.accepts[0]`:
+2. Read the invoice from `structuredContent.payment_required` or `structuredContent.accepts[0]`:
    - `amount` raw units (`10000` = 0.01 USDC)
    - `asset` `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
    - `payTo` `0xA75E1a201552Cad0282d01C09DC95d9559642FBb`

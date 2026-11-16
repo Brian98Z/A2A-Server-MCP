@@ -21,9 +21,11 @@ Use `/mcp` with stateless Streamable HTTP. The legacy custom JSON-RPC endpoint i
 ```
 
 **Selected tools:**
-- `check_base_token_safety`: Base token security report (0.01 USDC).
+- `check_base_token_safety`: Base token security report (0.01 USDC or 1 point). Call with only `token_address` first for a free market preview; add `payer_address` for the invoice to the full report.
 - `simulate_mev_route_safety`: Simulate a Base transaction route (1.50 USDC or 150 points).
 - `fast_code_audit`: AI code security analysis (0.02 USDC or 2 points).
+- `deep_protocol_reasoning`: AI protocol analysis (0.10 USDC or 10 points).
+- `remove_image_background`: Transparent RGBA background removal (0.01 USDC or 1 point).
 - `generate_a2a_invitation`: Free EIP-191 wallet registration with SHA-256 proof of work; returns a referral code and SVG. Referral rewards are capped at 200 points per inviter. Only promotional-point redemptions are limited to three calls per wallet per UTC day; purchased-only redemptions bypass that limit. Active and uncertain promotional operations occupy a slot until released.
 - `get_a2a_registration_protocol`: Retrieve the canonical signing message and current proof-of-work difficulty.
 - `get_arcade_auth_message`: Return the EIP-191 arcade message to sign; same nonce/expiry rules as registration (300s TTL, nonce burned after one call).

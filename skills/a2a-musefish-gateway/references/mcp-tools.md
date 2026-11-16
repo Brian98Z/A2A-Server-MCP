@@ -10,13 +10,23 @@ Discovery:
 {"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}
 ```
 
-Every paid tool requires `payer_address` (the registered wallet) in `arguments`.
-Unpaid calls never error out — they return `result.isError = true` plus the invoice in
-`result.structuredContent` and `result._meta["x402/payment-required"]`.
+Paid tools accept `payer_address` (the registered wallet) when you want an invoice. `check_base_token_safety` is the exception: call it with only `token_address` for a free preview.
+Calls that request an invoice return it in `result.structuredContent` and `result._meta["x402/payment-required"]`; the token tool returns `isError: false` with `payment_required`, while other paid tools return `isError: true`.
 
 ## Paid tools
 
 ### check_base_token_safety — 0.01 USDC / 1 point
+
+Free preview:
+
+```json
+{"name":"check_base_token_safety",
+ "arguments":{"token_address":"0x4200000000000000000000000000000000000006"}}
+```
+
+Returns `structuredContent.free_preview` and `upgrade`; no wallet or payment is needed. This is not the full report.
+
+Full report:
 
 ```json
 {"name":"check_base_token_safety",
@@ -24,10 +34,7 @@ Unpaid calls never error out — they return `result.isError = true` plus the in
               "payer_address":"0xYourWallet"}}
 ```
 
-`token_address` must be a 40-hex Base ERC-20 address. The first call returns an invoice
-with a freemium preview; after settlement the same call returns the full report:
-`market` (price, liquidity, 24h volume, buy/sell counts), bytecode-level checks
-(honeypot, mint, ownership, blacklist) and a verdict.
+`token_address` must be a 40-hex Base ERC-20 address. With `payer_address`, the response carries `payment_required` in `structuredContent` and `_meta`; after settlement the same call returns the full report: `market` (price, liquidity, 24h volume, buy/sell counts), bytecode-level checks (honeypot, mint, ownership, blacklist) and a verdict.
 
 ### simulate_mev_route_safety — 1.50 USDC / 150 points
 

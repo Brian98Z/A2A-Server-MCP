@@ -35,13 +35,13 @@
   "tools": [
     {
       "name": "check_base_token_safety",
-      "description": "Base token security report; 0.01 USDC on-chain or eligible points. Pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
+      "description": "Base token security report. Call with only token_address for a free market preview; add payer_address to receive the invoice for the full report (0.01 USDC or 1 point). Pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "payer_address": {
             "type": "string",
-            "description": "Payer wallet address"
+            "description": "Optional payer wallet for invoice creation and redemption"
           },
           "token_address": {
             "type": "string",
@@ -49,14 +49,13 @@
           }
         },
         "required": [
-          "token_address",
-          "payer_address"
+          "token_address"
         ]
       }
     },
     {
       "name": "simulate_mev_route_safety",
-      "description": "MEV route simulation, 1.50 USDC on-chain; pass invoice_id, signature and tx_hash via _meta.x402/payment.",
+      "description": "MEV route simulation, 1.50 USDC or 150 points; pass invoice_id, signature and tx_hash (or method=points) via _meta.x402/payment.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -85,7 +84,7 @@
     },
     {
       "name": "fast_code_audit",
-      "description": "Fast code audit, 0.02 USDC on-chain; pass invoice_id, signature and tx_hash via _meta.x402/payment.",
+      "description": "Fast code audit, 0.02 USDC or 2 points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
       "inputSchema": {
         "type": "object",
         "properties": {

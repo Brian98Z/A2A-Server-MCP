@@ -96,22 +96,22 @@ def main() -> int:
             "params": {"name": ns.tool, "arguments": args}}
     status, first = mcp(call, base)
     result = first.get("result") if isinstance(first, dict) else None
-    if result and not result.get("isError"):
-        print("already settled without payment:")
-        print(json.dumps(result, ensure_ascii=False, indent=2)[:4000])
-        return 0
-
     structured = (result or {}).get("structuredContent") or {}
     meta_payment = ((result or {}).get("_meta") or {}).get("x402/payment-required") or {}
     error_data = ((first.get("error") or {}).get("data") or {}) if isinstance(first, dict) else {}
-    if structured.get("status") in ("warming", "offline"):
-        print(f"backend {structured['status']}: retry after {structured.get('retry_after_s', 15)}s; "
-              "no invoice was issued and nothing is owed")
-        return 3
     invoice = (structured.get("invoiceId") or meta_payment.get("invoiceId")
                or error_data.get("invoiceId"))
     challenge = (structured.get("challengeToSign") or meta_payment.get("challengeToSign")
                  or error_data.get("challengeToSign"))
+    if not invoice and not challenge and result and not result.get("isError"):
+        print("already settled without payment:")
+        print(json.dumps(result, ensure_ascii=False, indent=2)[:4000])
+        return 0
+
+    if structured.get("status") in ("warming", "offline"):
+        print(f"backend {structured['status']}: retry after {structured.get('retry_after_s', 15)}s; "
+              "no invoice was issued and nothing is owed")
+        return 3
     if not invoice or not challenge:
         print(f"unexpected response [{status}]:", json.dumps(first, ensure_ascii=False)[:1200])
         return 1

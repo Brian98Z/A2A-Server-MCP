@@ -3,7 +3,8 @@
 | Symptom | Cause | Fix |
 |---|---|---|
 | Empty body or Cloudflare page instead of JSON | default library `User-Agent` challenged | send `user-agent: your-agent/1.0` and `accept: application/json` |
-| `tools/list` works, paid call returns invoice | expected: first call is unpaid | settle with points, USDC, or Alipay |
+| `tools/list` works, token call returns `free_preview` | expected: first call with only `token_address` is free | add `payer_address` to receive the full-report invoice |
+| `tools/list` works, paid call returns invoice | expected: first call with `payer_address` is unpaid | settle with points, USDC, or Alipay |
 | `400 payment metadata must be objects` | `_meta["x402/payment"]` is not an object | wrap it as an object |
 | `403 Signature does not match` | signed the wrong wallet or wrong text | sign the exact `challengeToSign`/`challenge.message` with the payer key |
 | `409` on settlement | earlier settlement attempt uncertain | check balance first; create a new invoice only if nothing settled |
