@@ -8,6 +8,7 @@ tags: code,mcp
 
 Endpoint: `POST https://a2a.musefish.trade/mcp` (Streamable HTTP, JSON-RPC 2.0).
 Discovery: `tools/list`, then `tools/call`. Protocol version: `2025-03-26`.
+Every POST must send `Content-Type: application/json` and `Accept: application/json, text/event-stream`; responses are a single JSON-RPC object with no SSE framing.
 
 ## 1. Configure
 
@@ -25,7 +26,10 @@ Legacy JSON-RPC endpoint: `https://a2a.musefish.trade/mcp-legacy`.
 
 ## 2. First call
 
-`check_base_token_safety` with only `token_address` returns a free market preview. No wallet, invoice, or payment is needed. This is not the full report.
+`check_base_token_safety` with only `token_address` returns a free market preview. No wallet, invoice, or payment is needed, and no default token is assumed. This is not the full report.
+
+- Over MCP the preview arrives in a normal `200` result (`structuredContent.free_preview`).
+- Over REST (`POST /api/v1/token-report`) the same call answers `HTTP 402` whose body already carries `free_preview`; read it as data.
 
 Re-call with `payer_address` to receive the invoice for the full bytecode report.
 
@@ -82,8 +86,11 @@ New members receive 2 points; an invite code gives 3, and the inviter earns 1 po
 ## 6. Errors
 
 - `503`: maintenance or downstream outage; no invoice was issued.
-- `429`: admission contention; honor `Retry-After`.
+- `429`: admission contention or a rate limit; honor `Retry-After` (`retry_after_s` in the body).
+- `401 payment_signature_invalid`: the EIP-191 signature does not match the challenge or payer.
 - Settlement failures set `isError` and `_meta["x402/payment-error"].status_code`.
 - `409`: uncertain outcome; do not retry automatically and never pay twice.
+
+Rate limits per IP: registration 20/min; free previews and preview-invoice issuance 60/hour, shared by MCP and REST.
 
 Status: `https://a2a.musefish.trade/status.json`.
