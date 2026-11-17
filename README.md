@@ -2,6 +2,8 @@
 
 Remote MCP server for Base token security, EVM route simulation, AI code audits, image background removal, and an arcade. Paid calls settle in USDC on Base (x402) or membership points.
 
+This repository publishes the MCP interface only — endpoint contract, tool reference, client configs and registry manifests — plus the skill package under `skills/`. Product, marketing and operations material is not published here.
+
 ## Connect
 
 Streamable HTTP, MCP protocol `2025-03-26`:
