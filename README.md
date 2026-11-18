@@ -18,9 +18,11 @@ Use Streamable HTTP with MCP protocol version `2025-03-26`:
 
 Call `tools/list` for current input schemas. The legacy JSON-RPC endpoint is `/mcp-legacy`.
 
-### Service window
+### Availability
 
-Paid execution runs **Mon–Fri 11:00–22:00 (UTC+8)**. Outside that window the paid endpoints return `503` with `Retry-After` and a machine-readable window — **no invoice is issued and no payment is expected**. Free endpoints (registration, member lookup, catalog, `/status.json`) stay available.
+The gateway runs on actual runtime availability, not office hours: there is no weekday or weekend cutoff. `GET /status.json` reports `open`, `maintenance` and backend health. If the gateway is put into explicit maintenance, paid endpoints return `503` with `Retry-After` **before any invoice is issued**, so no payment is expected.
+
+Free endpoints (registration, member lookup, catalog, `/status.json`) stay available.
 
 ```bash
 curl https://a2a.musefish.trade/status.json
