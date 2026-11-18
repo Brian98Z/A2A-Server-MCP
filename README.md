@@ -20,6 +20,14 @@ Streamable HTTP, MCP protocol `2025-03-26`:
 
 Legacy JSON-RPC: `https://a2a.musefish.trade/mcp-legacy`. Call `tools/list` for live input schemas.
 
+## Demo
+
+37 seconds, recorded from a real ConPTY session against the live endpoint: request → 402 with invoice and free preview → EIP-191 signature → points settlement → full report.
+
+![402 to points settlement](docs/demo-402.gif)
+
+[MP4 version](docs/demo-402.mp4)
+
 ## First call
 
 Call `check_base_token_safety` with only `token_address`. The response is a free market preview, with no wallet, invoice, or payment.
