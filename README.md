@@ -1,10 +1,12 @@
 # A2A Web3 Server MCP
 
-An MCP gateway for Base token security, transaction simulation, AI analysis, image background removal, and wallet-based referrals.
+Remote MCP server for Base token security, EVM route simulation, AI code audits, image background removal, and an arcade. Paid calls settle in USDC on Base (x402) or membership points.
+
+This repository publishes the MCP interface only — endpoint contract, tool reference, client configs and registry manifests — plus the skill package under `skills/`. Product, marketing and operations material is not published here.
 
 ## Connect
 
-Use Streamable HTTP with MCP protocol version `2025-03-26`:
+Streamable HTTP, MCP protocol `2025-03-26`:
 
 ```json
 {
@@ -16,7 +18,11 @@ Use Streamable HTTP with MCP protocol version `2025-03-26`:
 }
 ```
 
-Call `tools/list` for current input schemas. The legacy JSON-RPC endpoint is `/mcp-legacy`.
+Legacy JSON-RPC: `https://a2a.musefish.trade/mcp-legacy`. Call `tools/list` for live input schemas.
+
+## First call
+
+Call `check_base_token_safety` with only `token_address`. The response is a free market preview, with no wallet, invoice, or payment.
 
 ### Availability
 
@@ -24,110 +30,73 @@ The gateway runs on actual runtime availability, not office hours: there is no w
 
 Free endpoints (registration, member lookup, catalog, `/status.json`) stay available.
 
-```bash
-curl https://a2a.musefish.trade/status.json
+Re-call with `payer_address` to receive the invoice for the full report. Other paid tools require `payer_address` when you want an invoice.
+
+```json
+{
+  "token_address": "0x4200000000000000000000000000000000000006"
+}
 ```
 
-### Client setup
-
-In Cursor, add a new MCP server named `a2a-base-guard`, select Streamable HTTP, and use the URL above. In Claude Desktop, use its remote MCP connector where available; client versions differ in support for URL-based entries in `claude_desktop_config.json`. After connecting, refresh the server's tools and call `tools/list`. See the [integration guide](DISTRIBUTION_GUIDE.md) for additional discovery endpoints.
-
-All paid tools require `payer_address` in their arguments. Common inputs:
-
-| Tool | Inputs besides `payer_address` |
-|---|---|
-| `check_base_token_safety` | `token_address`: Base token contract address |
-| `simulate_mev_route_safety` | `target_address`; optional hex `calldata` and integer `value` in wei |
-| `fast_code_audit`, `deep_protocol_reasoning` | `prompt`; optional `system_prompt` |
-| `remove_image_background` | `image` as base64 or a public URL; optional `rem_mode` and `add_background` |
-
-For example, start a token report with `{"token_address":"0x4200000000000000000000000000000000000006","payer_address":"<your wallet address>"}`. The first call returns invoice details rather than the paid report. Follow the payment steps below; replace the example wallet with your own.
-
-## Tools and pricing
+## Tools
 
 | Tool | Purpose | Price |
 |---|---|---|
-| `check_base_token_safety` | Base token security and liquidity report | 0.01 USDC or 1 point |
-| `simulate_mev_route_safety` | Read-only transaction route simulation | 1.50 USDC or 150 points |
-| `fast_code_audit` | AI code security analysis | 0.02 USDC or 2 points |
-| `deep_protocol_reasoning` | AI protocol analysis | 0.10 USDC or 10 points |
-| `remove_image_background` | Transparent image background removal | 0.01 USDC or 1 point |
-| `generate_a2a_invitation` | Register and generate a referral code and SVG | Free |
-| `get_a2a_registration_protocol` | Get signing and proof-of-work parameters | Free |
+| `check_base_token_safety` | Base token security and liquidity report; free preview first | 0.01 USDC or 1 point |
+| `simulate_mev_route_safety` | Read-only EVM route and flashloan simulation | 1.50 USDC or 150 points |
+| `fast_code_audit` | AI code security audit | 0.02 USDC or 2 points |
+| `deep_protocol_reasoning` | AI protocol and contract reasoning | 0.10 USDC or 10 points |
+| `remove_image_background` | Transparent RGBA background removal | 0.01 USDC or 1 point |
+| `generate_a2a_invitation` | Register a wallet; returns referral code and SVG | Free |
+| `get_a2a_registration_protocol` | Registration message and proof-of-work difficulty | Free |
+| `get_arcade_auth_message` | EIP-191 message for arcade access | Free |
+| `slots_state` | Arcade balance, pity meter, stats, recent spins | Free |
+| `slots_spin` | One spin for 1 game point; prizes 1/2/5/10/100 | Free |
 
-## Membership and referrals
+## Payment
 
-Fastest path — one command (requires `eth-account` and `requests`):
-
-```bash
-pip install eth-account requests
-curl -fsSL https://a2a.musefish.trade/register_a2a.py | python3 -
-```
-
-The script generates a wallet (or uses `PRIVATE_KEY`), signs EIP-191, solves the SHA-256 proof of work, and registers in one request. New members get **2 free points**; joining with `--inviter CODE` gives 3, and the inviter earns 1 point (lifetime cap 200).
-
-Manual route: `generate_a2a_invitation` or `POST /api/v1/invitations`. Generate a random 32-byte lowercase hexadecimal nonce and an expiry no more than 300 seconds ahead; sign the registration message with EIP-191, solve the proof of work, then submit `wallet_address`, `nonce`, `expires_at`, `signature`, and `pow_counter`. `chain_id` defaults to 8453; `inviter_code` is optional. Fetch the exact message and current difficulty with `get_a2a_registration_protocol` or `GET /api/v1/invitations/protocol`.
-
-Sign the following exact UTF-8 message with EIP-191 `personal_sign`, using LF line breaks and no trailing newline:
-
-```text
-A2A Membership Registration
-Domain: a2a.musefish.trade
-Wallet: <lowercase canonical address>
-Inviter code: <exact referral code | none>
-Chain ID: <unsigned canonical decimal>
-Nonce: <64 lowercase hex chars>
-Expires: <canonical Unix-seconds decimal>
-Sign this message to register this wallet.
-```
-
-For proof of work, find a canonical nonnegative decimal counter such that SHA-256 of UTF-8 `a2a-registration-pow-v1:<message_sha256_hex>:<signature_sha256_hex>:<decimal_counter>` has the number of leading zero bits returned by the protocol endpoint. Both hashes are lowercase SHA-256 hex of the exact UTF-8 message and signature strings. Submit the resulting counter as `pow_counter`; use the exact inviter code in both message and request, or `none` in the message when omitted. Registration returns a referral code, invitation link, and SVG.
-
-Each eligible referred registration awards the inviter one point, up to 200 lifetime referral points. Registration awards no points to the new member. Exact successful retries do not award again; existing rewards above the cap are not revoked. Check available, reserved, and total points at `GET /api/v1/members/{wallet_address}`.
-
-Promotional points are limited to three service calls per wallet per UTC day; purchased points are not subject to that limit. Service concurrency limits still apply.
-
-Members can purchase points through Alipay on the website. Agent service calls support Base USDC or membership points.
-
-Registration IPs are best-effort: forwarded headers are unauthenticated and can be spoofed, while shared IPs can prevent legitimate registrations. Wallet signatures prove key control, not unique identity; the dotcode itself does not authenticate ownership.
-
-## Payment and execution
-
-For paid tools, provide `payer_address` and request an invoice. Sign `challengeToSign`, then resubmit the same inputs with `invoice_id` and `signature` in MCP `_meta["x402/payment"]`, plus `tx_hash` for Base USDC or `method: "points"` for eligible services. Invoice details are returned in `_meta["x402/payment-required"]`. MCP settlement failures set `isError` and expose the underlying status in `_meta["x402/payment-error"].status_code`; a tool-level error may use HTTP 200.
-
-### Step-by-step payment
-
-1. Call the selected tool with its normal arguments and `payer_address`. Read `invoiceId`, `challengeToSign`, network, recipient and amount from `_meta["x402/payment-required"]`.
-2. Sign the exact `challengeToSign` text with the payer wallet using EIP-191 `personal_sign`. Never send your private key.
-3. For USDC, transfer the invoice amount of native USDC on Base to the invoice recipient and retain the transaction hash. For points, skip the transfer and use `method: "points"` instead.
-4. Call the same tool again with identical arguments and an MCP `params._meta` object like the following, replacing each placeholder:
+1. Call the tool with `payer_address` and no payment metadata. Read `invoiceId`, `challengeToSign`, recipient, and amount from `_meta["x402/payment-required"]`.
+2. Sign the exact `challengeToSign` text with EIP-191. Never send a private key.
+3. For USDC, transfer the exact amount on Base and keep the transaction hash. For points, skip the transfer.
+4. Retry the same call with the same arguments and:
 
 ```json
 {
   "x402/payment": {
     "method": "points",
     "invoice_id": "<invoiceId>",
-    "payer_address": "<payer wallet address>",
+    "payer_address": "<wallet>",
     "signature": "<EIP-191 signature>"
   }
 }
 ```
 
-For USDC, omit `method` and add `"tx_hash": "<transaction hash>"`. Do not combine a transaction hash with points. For the REST equivalents, request the invoice first, then repeat the same inputs with `invoice_id`, `payer_address` and `signature`; use the HTTP header `X-A2A-Payment-Method: points` for points, or include `tx_hash` for USDC. Invoices expire after five minutes. Partial points payments are not supported.
+For USDC, omit `method` and use `"tx_hash": "<hash>"`. Never combine `tx_hash` with `method: "points"`. Invoices expire after 300 seconds. Do not pay twice.
 
-Verified on-chain and points calls share one backend execution slot per process. Up to 16 verified on-chain calls may wait for 60 seconds; points calls are rejected when the backend is busy or paid calls are waiting. A running points call is not interrupted. API and MCP request bodies have a 15-second read deadline and 15 MiB limit.
+REST calls use the same fields; send points payments with `X-A2A-Payment-Method: points`.
 
-After dispatch, a failed or interrupted operation can have an uncertain outcome. Automatic redispatch is disabled, and backend admission can be quarantined until an operator confirms the remote task has stopped. The quarantine is process-local and does not survive restart; there is no automatic on-chain reconciliation or refund. Points remain reserved until an operator verifies the outcome and reconciles the hold. The queue deadline is not a backend execution deadline.
+## Registration and points
 
-## Alipay
+```bash
+pip install eth-account requests
+curl -fsSLo register_a2a.py https://a2a.musefish.trade/register_a2a.py
+python3 register_a2a.py
+```
 
-Alipay web payment collection is integrated. It is separate from MCP tool settlement and membership points.
+The script creates a wallet, signs the EIP-191 message, solves the SHA-256 proof of work, and registers in one request. It saves the private key and signed request in an owner-only file; protect it like a password. Resume a lost response with `--resume`.
 
-## Administration
+New members receive 2 points; an invite code gives 3, and the inviter earns 1 point (lifetime cap 200). Registration is also available through `generate_a2a_invitation`; fetch the exact message and difficulty from `get_a2a_registration_protocol`.
 
-Configure `ADMIN_SESSION_TOKEN`, `CF_TURNSTILE_SITE_KEY`, and `CF_TURNSTILE_SECRET_KEY` for the admin dashboard. API clients can authenticate using `X-Admin-Token`. Existing blacklist entries require authenticated manual review and removal.
+Promotional points are limited to 3 service calls per wallet per UTC day. Purchased points are not.
 
-The dashboard shows IP source analysis (country, city, ASN/organization per client IP) and a global region share computed from public request volume. Public IPs are resolved once through `ipwho.is` and cached in the `ip_geo` table; resolution runs in background threads so `/api/admin/metrics` stays fast. Loopback and private addresses are labeled local and excluded from the regional percentage denominator. Set `GEOIP_PROVIDER=off` to disable external lookups (cached rows remain visible); `IP_ORIGIN_WINDOW_SECONDS` (default 604800), `GEOIP_WORKERS` and `GEOIP_TIMEOUT` tune the aggregation window and resolver.
+## Errors and availability
+
+- No hardcoded business hours. A `503` means maintenance or a downstream outage; it is returned before any invoice is issued.
+- `429` means admission contention. Honor `Retry-After`.
+- MCP settlement errors set `isError` and expose the status in `_meta["x402/payment-error"].status_code`.
+- A `409` uncertain outcome must not be retried automatically. Keep the invoice and transaction identifiers; never send a second payment.
+
+Status: `https://a2a.musefish.trade/status.json`
 
 ## Links
 
