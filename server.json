@@ -3,7 +3,7 @@
   "name": "trade.musefish.a2a/a2a-gateway",
   "title": "A2A Gateway — Base Token Guard & x402 Settlement",
   "description": "Free signup via register_a2a_agent. Token risk, MEV sim, code audit, cutout; x402 or points.",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "remotes": [
     {
       "type": "streamable-http",
