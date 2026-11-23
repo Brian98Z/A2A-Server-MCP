@@ -35,7 +35,7 @@
   "tools": [
     {
       "name": "check_base_token_safety",
-      "description": "Base token security report. Call with only token_address for a free market preview; add payer_address to receive the invoice for the full report (0.01 USDC or 1 point). Pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
+      "description": "Base token security report. Call with only token_address for a free market preview; add payer_address to receive the invoice for the full report (0.01 USDC or 1 point). Pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points. Clients that only submit arguments may pass payment_method, invoice_id, signature and tx_hash directly instead of _meta.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -46,6 +46,26 @@
           "token_address": {
             "type": "string",
             "description": "Base ERC-20 contract hex address (0x...)"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "points",
+              "onchain"
+            ],
+            "description": "Settlement rail. 'points' spends membership points; 'onchain' verifies tx_hash."
+          },
+          "invoice_id": {
+            "type": "string",
+            "description": "invoiceId from the payment-required response."
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-191 signature over challengeToSign by payer_address."
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Base mainnet USDC transfer hash for on-chain settlement."
           }
         },
         "required": [
@@ -55,7 +75,7 @@
     },
     {
       "name": "simulate_mev_route_safety",
-      "description": "MEV route simulation, 1.50 USDC or 150 points; pass invoice_id, signature and tx_hash (or method=points) via _meta.x402/payment.",
+      "description": "MEV route simulation, 1.50 USDC or 150 points; pass invoice_id, signature and tx_hash (or method=points) via _meta.x402/payment. Clients that only submit arguments may pass payment_method, invoice_id, signature and tx_hash directly instead of _meta.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -74,6 +94,26 @@
           "value": {
             "type": "integer",
             "description": "Native ETH value in wei"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "points",
+              "onchain"
+            ],
+            "description": "Settlement rail. 'points' spends membership points; 'onchain' verifies tx_hash."
+          },
+          "invoice_id": {
+            "type": "string",
+            "description": "invoiceId from the payment-required response."
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-191 signature over challengeToSign by payer_address."
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Base mainnet USDC transfer hash for on-chain settlement."
           }
         },
         "required": [
@@ -84,7 +124,7 @@
     },
     {
       "name": "fast_code_audit",
-      "description": "Fast code audit, 0.02 USDC or 2 points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
+      "description": "Fast code audit, 0.02 USDC or 2 points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points. Clients that only submit arguments may pass payment_method, invoice_id, signature and tx_hash directly instead of _meta.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -99,6 +139,26 @@
           "system_prompt": {
             "type": "string",
             "description": "Optional customized system role prompt"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "points",
+              "onchain"
+            ],
+            "description": "Settlement rail. 'points' spends membership points; 'onchain' verifies tx_hash."
+          },
+          "invoice_id": {
+            "type": "string",
+            "description": "invoiceId from the payment-required response."
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-191 signature over challengeToSign by payer_address."
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Base mainnet USDC transfer hash for on-chain settlement."
           }
         },
         "required": [
@@ -109,7 +169,7 @@
     },
     {
       "name": "deep_protocol_reasoning",
-      "description": "Deep reasoning, 0.10 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
+      "description": "Deep reasoning, 0.10 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points. Clients that only submit arguments may pass payment_method, invoice_id, signature and tx_hash directly instead of _meta.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -124,6 +184,26 @@
           "system_prompt": {
             "type": "string",
             "description": "Optional customized system role prompt"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "points",
+              "onchain"
+            ],
+            "description": "Settlement rail. 'points' spends membership points; 'onchain' verifies tx_hash."
+          },
+          "invoice_id": {
+            "type": "string",
+            "description": "invoiceId from the payment-required response."
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-191 signature over challengeToSign by payer_address."
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Base mainnet USDC transfer hash for on-chain settlement."
           }
         },
         "required": [
@@ -134,7 +214,7 @@
     },
     {
       "name": "remove_image_background",
-      "description": "Transparent RMBG-1.4 background removal, 0.01 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points.",
+      "description": "Transparent RMBG-1.4 background removal, 0.01 USDC on-chain or eligible points; pass invoice_id and signature via _meta.x402/payment, with tx_hash for on-chain or method=points. Clients that only submit arguments may pass payment_method, invoice_id, signature and tx_hash directly instead of _meta.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -161,6 +241,26 @@
             ],
             "default": "none",
             "description": "Optional replacement background color"
+          },
+          "payment_method": {
+            "type": "string",
+            "enum": [
+              "points",
+              "onchain"
+            ],
+            "description": "Settlement rail. 'points' spends membership points; 'onchain' verifies tx_hash."
+          },
+          "invoice_id": {
+            "type": "string",
+            "description": "invoiceId from the payment-required response."
+          },
+          "signature": {
+            "type": "string",
+            "description": "EIP-191 signature over challengeToSign by payer_address."
+          },
+          "tx_hash": {
+            "type": "string",
+            "description": "Base mainnet USDC transfer hash for on-chain settlement."
           }
         },
         "required": [

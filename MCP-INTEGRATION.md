@@ -98,6 +98,20 @@ Add `payer_address` to receive the invoice for the full bytecode report.
 }
 ```
 
+Clients that can only submit tool arguments (no `_meta`, e.g. a UI form) may attach the
+payment fields directly to the retried call instead:
+
+```json
+{
+  "payment_method": "points",
+  "invoice_id": "<invoiceId>",
+  "payer_address": "<wallet>",
+  "signature": "<EIP-191 signature>"
+}
+```
+
+Use `"payment_method": "onchain"` with `"tx_hash": "<hash>"` for USDC. Both transports are verified identically.
+
 For USDC, omit `method` and send `"tx_hash": "<hash>"`. Never combine both fields. Invoices expire
 after 300 seconds; a settled invoice executes at most once. Successful results report
 `settled_via: points | onchain`.

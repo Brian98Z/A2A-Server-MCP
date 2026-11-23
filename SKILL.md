@@ -73,6 +73,20 @@ Re-call with `payer_address` to receive the invoice for the full bytecode report
 ```
 
 For USDC, omit `method` and use `"tx_hash": "<hash>"`. Never combine both. Invoices expire after 300 seconds.
+Clients that can only submit tool arguments (no `_meta`, e.g. a UI form) may attach the
+payment fields directly to the retried call instead:
+
+```json
+{
+  "payment_method": "points",
+  "invoice_id": "<invoiceId>",
+  "payer_address": "<wallet>",
+  "signature": "<EIP-191 signature>"
+}
+```
+
+Use `"payment_method": "onchain"` with `"tx_hash": "<hash>"` for USDC. Both transports are verified identically.
+
 
 ## 5. Registration
 

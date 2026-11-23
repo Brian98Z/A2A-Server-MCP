@@ -83,6 +83,20 @@ Re-call with `payer_address` to receive the invoice for the full report. Other p
 For USDC, omit `method` and use `"tx_hash": "<hash>"`. Never combine `tx_hash` with `method: "points"`. Invoices expire after 300 seconds. Do not pay twice.
 
 REST calls use the same fields; send points payments with `X-A2A-Payment-Method: points`.
+Clients that can only submit tool arguments (no `_meta`, e.g. a UI form) may attach the
+payment fields directly to the retried call instead:
+
+```json
+{
+  "payment_method": "points",
+  "invoice_id": "<invoiceId>",
+  "payer_address": "<wallet>",
+  "signature": "<EIP-191 signature>"
+}
+```
+
+Use `"payment_method": "onchain"` with `"tx_hash": "<hash>"` for USDC. Both transports are verified identically.
+
 
 ## Registration and points
 
