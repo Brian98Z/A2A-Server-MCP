@@ -6,7 +6,7 @@ This repository publishes the MCP interface only — endpoint contract, tool ref
 
 ## Connect
 
-Streamable HTTP, MCP protocol `2025-03-26`:
+Streamable HTTP. The legacy `initialize` handshake negotiates `2025-06-18` (or `2025-03-26`); clients that probe `server/discover` are offered `2026-07-28`:
 
 ```json
 {

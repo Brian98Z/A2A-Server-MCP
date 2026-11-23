@@ -7,7 +7,7 @@ tags: code,mcp
 # A2A Gateway — MCP Integration
 
 Endpoint: `POST https://a2a.musefish.trade/mcp` (Streamable HTTP, JSON-RPC 2.0).
-Discovery: `tools/list`, then `tools/call`. Protocol version: `2025-03-26`.
+Discovery: `tools/list`, then `tools/call`. Legacy protocol version: `2025-03-26` (also negotiates `2025-06-18`); `server/discover` is supported for modern clients.
 Every POST must send `Content-Type: application/json` and `Accept: application/json, text/event-stream`; responses are a single JSON-RPC object with no SSE framing.
 
 ## 1. Configure

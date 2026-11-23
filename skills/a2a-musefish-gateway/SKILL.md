@@ -10,7 +10,7 @@ One remote MCP server exposes metered Web3 and AI services. Paid calls settle in
 
 | Item | Value |
 |---|---|
-| MCP endpoint | `https://a2a.musefish.trade/mcp` (Streamable HTTP, protocol `2025-03-26`) |
+| MCP endpoint | `https://a2a.musefish.trade/mcp` (Streamable HTTP; legacy `initialize` negotiates `2025-03-26` / `2025-06-18`, `server/discover` supported) |
 | Legacy JSON-RPC | `https://a2a.musefish.trade/mcp-legacy` |
 | Chain | Base mainnet, `eip155:8453` |
 | USDC | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |

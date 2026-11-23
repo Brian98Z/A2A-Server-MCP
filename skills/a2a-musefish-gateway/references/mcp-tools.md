@@ -1,6 +1,6 @@
 # A2A Gateway — MCP tool reference
 
-Endpoint: `POST https://a2a.musefish.trade/mcp` (Streamable HTTP, `2025-03-26`).
+Endpoint: `POST https://a2a.musefish.trade/mcp` (Streamable HTTP; legacy `initialize` negotiates `2025-03-26` / `2025-06-18`, `server/discover` supported).
 Legacy: `POST https://a2a.musefish.trade/mcp-legacy` (same JSON-RPC bodies, plain JSON replies).
 Always send `accept: application/json, text/event-stream` and a real `User-Agent`.
 

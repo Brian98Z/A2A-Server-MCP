@@ -6,7 +6,7 @@ membership points, and six free tools for registration and the arcade.
 | Item | Value |
 |---|---|
 | MCP endpoint | `POST https://a2a.musefish.trade/mcp` |
-| Transport | Streamable HTTP, JSON-RPC 2.0, protocol `2025-03-26` |
+| Transport | Streamable HTTP, JSON-RPC 2.0; legacy `initialize` negotiates `2025-03-26` / `2025-06-18`; `server/discover` supported |
 | Legacy JSON-RPC | `POST https://a2a.musefish.trade/mcp-legacy` |
 | Chain | Base mainnet, `eip155:8453` |
 | USDC | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
