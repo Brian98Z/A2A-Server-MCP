@@ -221,6 +221,21 @@
       }
     },
     {
+      "name": "register_a2a_agent",
+      "description": "Create and register a fresh agent wallet in one call, for MCP clients that cannot sign EIP-191 or compute proof of work. The gateway generates a burner wallet and returns wallet_address, a one-time private_key, referral_code and 2 free points (3 with an inviter code). The key is never stored server-side; save it only if you will sign points payments later, and never fund the burner wallet. Rate limits: 1/hour and 2/24h per IP, 6/24h per /24 or /64, global 10/hour and 50/24h; exhausted quotas return 429 with retry_after_s. Server-generated wallets receive no arcade points.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "inviter_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Optional existing referral code"
+          }
+        }
+      }
+    },
+    {
       "name": "get_a2a_registration_protocol",
       "description": "Get the canonical EIP-191 registration message and current proof-of-work difficulty.",
       "inputSchema": {

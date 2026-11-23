@@ -56,6 +56,7 @@ Re-call with `payer_address` to receive the invoice for the full report. Other p
 | `deep_protocol_reasoning` | AI protocol and contract reasoning | 0.10 USDC or 10 points |
 | `remove_image_background` | Transparent RGBA background removal | 0.01 USDC or 1 point |
 | `generate_a2a_invitation` | Register a wallet; returns referral code and SVG | Free |
+| `register_a2a_agent` | Server-generated burner wallet (no signature/PoW); one-time key + 2 points | Free |
 | `get_a2a_registration_protocol` | Registration message and proof-of-work difficulty | Free |
 | `get_arcade_auth_message` | EIP-191 message for arcade access | Free |
 | `slots_state` | Arcade balance, pity meter, stats, recent spins | Free |
@@ -93,14 +94,16 @@ python3 register_a2a.py
 
 The script creates a wallet, signs the EIP-191 message, solves the SHA-256 proof of work, and registers in one request. It saves the private key and signed request in an owner-only file; protect it like a password. Resume a lost response with `--resume`.
 
-New members receive 2 points; an invite code gives 3, and the inviter earns 1 point (lifetime cap 200). Registration is also available through `generate_a2a_invitation`; fetch the exact message and difficulty from `get_a2a_registration_protocol`.
+New members receive 2 points; an invite code gives 3, and the inviter earns 1 point (lifetime cap 200). Registration is also available through `generate_a2a_invitation`; fetch the exact message and difficulty from `get_a2a_registration_protocol`. MCP clients that cannot sign can call `register_a2a_agent` (no signature or PoW; one-time burner key, 2 free points, strict quotas).
 
 Promotional points are limited to 3 service calls per wallet per UTC day. Purchased points are not.
 
 ## Errors and availability
 
 - No hardcoded business hours. A `503` means maintenance or a downstream outage; it is returned before any invoice is issued.
-- `429` means admission contention. Honor `Retry-After`.
+- `429` means admission contention or a rate limit. Honor `Retry-After` (the body carries `retry_after_s`).
+- Rate limits: registration 20/min per IP; free previews and preview-invoice issuance 60/hour per IP, shared by MCP and REST.
+- Every failure returns `error`, `detail`, `hint` and `docs`; MCP transport errors use JSON-RPC `error.message` plus `error.data.hint`.
 - MCP settlement errors set `isError` and expose the status in `_meta["x402/payment-error"].status_code`.
 - A `409` uncertain outcome must not be retried automatically. Keep the invoice and transaction identifiers; never send a second payment.
 

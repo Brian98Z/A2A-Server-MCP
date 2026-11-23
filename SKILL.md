@@ -1,6 +1,6 @@
 ---
 name: a2a-gateway-mcp
-description: A2A Gateway MCP integration: five free tools and five paid tools settled over x402 USDC or points, with signing, payment, error handling, and arcade rules.
+description: "A2A Gateway MCP integration: six free tools and five paid tools settled over x402 USDC or points, with signing, wallet registration, payment, error handling, and arcade rules."
 tags: code,mcp
 ---
 
@@ -50,6 +50,7 @@ Re-call with `payer_address` to receive the invoice for the full bytecode report
 | Tool | Purpose |
 |---|---|
 | `generate_a2a_invitation` | Register a wallet; returns referral code and SVG |
+| `register_a2a_agent` | Server-generated burner wallet (no signature/PoW); one-time key + 2 points |
 | `get_a2a_registration_protocol` | Registration message and proof-of-work difficulty |
 | `get_arcade_auth_message` | EIP-191 message for arcade access |
 | `slots_state` | Arcade balance, pity meter, stats, recent spins |

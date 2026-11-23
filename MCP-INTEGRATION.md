@@ -1,7 +1,7 @@
 # A2A Gateway — MCP Integration
 
-One remote MCP server exposes ten tools: five metered services that settle in USDC on Base (x402) or
-membership points, and five free tools for registration and the arcade.
+One remote MCP server exposes eleven tools: five metered services that settle in USDC on Base (x402) or
+membership points, and six free tools for registration and the arcade.
 
 | Item | Value |
 |---|---|
@@ -71,6 +71,7 @@ Add `payer_address` to receive the invoice for the full bytecode report.
 
 | Tool | Purpose |
 |---|---|
+| `register_a2a_agent` | One-call registration for clients that cannot sign or solve PoW: the gateway generates a burner wallet and returns the private key once |
 | `generate_a2a_invitation` | One-call wallet registration with SHA-256 proof of work; returns referral code and SVG |
 | `get_a2a_registration_protocol` | Canonical signed message, request fields and current PoW difficulty |
 | `get_arcade_auth_message` | EIP-191 message for arcade access |
@@ -134,8 +135,15 @@ Balance lookup: `GET https://a2a.musefish.trade/api/v1/members/{wallet_address}`
 | MCP settlement failure | `isError: true` and `_meta["x402/payment-error"].status_code` |
 
 Rate limits per IP: registration 20/min; free previews and preview-invoice issuance 60/hour, shared by
-MCP and REST. Every failure body carries `error`, `detail`, `hint` and `docs`; MCP transport errors use
-`error.message` plus `error.data.hint`.
+MCP and REST. Server-generated agent wallets add three layers, all returning `429` with `retry_after_s`:
+1/hour and 2/24h per IP (`A2A_AGENT_IP_HOURLY_CAP`, `A2A_AGENT_REGISTRATION_DAILY_CAP`), 6/24h per /24
+or /64 (`A2A_AGENT_SUBNET_DAILY_CAP`), and a global 10/hour + 50/24h budget
+(`A2A_AGENT_GLOBAL_HOURLY_CAP`, `A2A_AGENT_GLOBAL_DAILY_CAP`). `A2A_AGENT_REGISTRATION_ENABLED=0`
+disables the path entirely. Server-generated wallets receive no arcade points
+(`A2A_AGENT_SIGNUP_GAME_POINTS`, default 0). The private key returned by `register_a2a_agent` is
+generated in memory, never stored or logged, and the wallet should never be funded. Every failure body
+carries `error`, `detail`, `hint` and `docs`; MCP transport errors use `error.message` plus
+`error.data.hint`.
 
 ## 8. More
 
