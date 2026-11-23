@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/mcp-server-manifest.json",
   "name": "a2a-base-guard",
   "description": "Base Web3 security, MEV sandbox, zero-retention local AI inference and a server-authoritative arcade, all payable through x402 micropayments",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "homepage": "https://a2a.musefish.trade",
   "repository": {
     "type": "git",
